@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@source "./**/*.jsx";
+@source "./**/*.js";
+@source "../index.html";
 
 :root {
   --primary-navy: #0D3B66;
