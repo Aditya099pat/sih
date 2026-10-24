@@ -18,7 +18,8 @@ export const DashboardView = ({
   onInitiateRpgfForInstrument,
   onDownloadAuditTrail,
   onTriggerReconciliation,
-  onOpenDrawer
+  onOpenDrawer,
+  onOpenTranscript
 }) => {
   return <div className="space-y-6">
       {
@@ -85,13 +86,21 @@ export const DashboardView = ({
             <span>Export Dossier (PDF/XLSX)</span>
           </button>
 
-          {
-    /* Apply Phase-5 Release Button */
-  }
+          {/* Certified Transcript QR Button */}
           <button
-    onClick={onOpenPhaseRelease}
-    className="px-3 py-2 text-xs font-semibold text-[#92400E] bg-[#FFFBEB] border border-[#FDE68A] rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-  >
+            onClick={() => onOpenTranscript && onOpenTranscript(instruments[0])}
+            className="px-3 py-2 text-xs font-semibold text-[#0D3B66] bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Generate Certified Transcript with Dynamic QR for EVC Inspection"
+          >
+            <span>📱</span>
+            <span>QR Transcript</span>
+          </button>
+
+          {/* Apply Phase-5 Release Button */}
+          <button
+            onClick={onOpenPhaseRelease}
+            className="px-3 py-2 text-xs font-semibold text-[#92400E] bg-[#FFFBEB] border border-[#FDE68A] rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          >
             <RotateCcw className="w-3.5 h-3.5 text-[#D97706]" />
             <span>Apply Phase-5 Release</span>
           </button>

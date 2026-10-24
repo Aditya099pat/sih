@@ -5,13 +5,18 @@ export const Header = ({
   searchQuery,
   onSearchChange,
   selectedYear,
-  onYearChange
+  onYearChange,
+  activeRole,
+  onRoleChange,
+  onOpenAiCopilot,
+  onOpenDigitalSignature
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsRead, setNotificationsRead] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [language, setLanguage] = useState("EN");
-  return <div className="sticky top-0 z-40 w-full select-none">
+  return (
+    <div className="sticky top-0 z-40 w-full select-none">
       {
     /* Top National Tricolor Stripe */
   }
@@ -138,36 +143,55 @@ export const Header = ({
     /* Action Controls & Signatory Officer Profile */
   }
         <div className="flex items-center gap-3 shrink-0">
-          {
-    /* Notification Bell */
-  }
+          {/* AI Regulatory Copilot Quick Button */}
+          <button
+            onClick={onOpenAiCopilot}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-[#0D3B66] hover:bg-blue-100 border border-blue-200 transition text-xs font-bold cursor-pointer shadow-xs"
+            title="Open AI Regulatory Copilot (APH Assistant)"
+          >
+            <span className="text-[#E65100]">✦</span>
+            <span className="hidden sm:inline">AI Copilot</span>
+          </button>
+
+          {/* e-Sign / Class-3 DSC quick button */}
+          <button
+            onClick={onOpenDigitalSignature}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition text-xs font-semibold cursor-pointer"
+            title="Apply Aadhaar e-Sign or Class-3 DSC"
+          >
+            <span>✍️</span>
+            <span className="text-[11px]">e-Sign</span>
+          </button>
+
+          {/* Notification Bell */}
           <div className="relative">
             <button
-    onClick={() => {
-      setShowNotifications(!showNotifications);
-      if (!showNotifications) setNotificationsRead(true);
-    }}
-    className="relative p-2 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-[#E2E8F0]"
-    aria-label="Notifications"
-  >
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                if (!showNotifications) setNotificationsRead(true);
+              }}
+              className="relative p-2 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-[#E2E8F0]"
+              aria-label="Notifications"
+            >
               <Bell className="w-5 h-5 text-[#64748B]" />
-              {!notificationsRead && <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#E65100] text-[10px] font-bold text-white shadow-xs">
+              {!notificationsRead && (
+                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#E65100] text-[10px] font-bold text-white shadow-xs">
                   2
-                </span>}
+                </span>
+              )}
             </button>
 
-            {
-    /* Notifications Dropdown */
-  }
-            {showNotifications && <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl border border-[#E2E8F0] bg-white p-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2">
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl border border-[#E2E8F0] bg-white p-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
                   <span className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">
                     Statutory Alerts (2)
                   </span>
                   <button
-    onClick={() => setShowNotifications(false)}
-    className="p-1 rounded text-slate-400 hover:text-slate-600 cursor-pointer"
-  >
+                    onClick={() => setShowNotifications(false)}
+                    className="p-1 rounded text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -193,26 +217,45 @@ export const Header = ({
                     </p>
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
           </div>
 
-          {
-    /* Regional Officer Profile Pill */
-  }
-          <div className="flex items-center gap-2.5 pl-2 border-l border-[#E2E8F0]">
-            <div className="w-8 h-8 rounded-full bg-[#0D3B66] text-white flex items-center justify-center font-bold text-xs ring-2 ring-slate-100">
-              VN
+          {/* RBAC Role Selector Dropdown */}
+          <div className="flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
+            <div className="relative">
+              <select
+                value={activeRole || "trust"}
+                onChange={(e) => onRoleChange && onRoleChange(e.target.value)}
+                className="appearance-none bg-slate-100 border border-[#E2E8F0] hover:border-[#0D3B66] rounded-lg px-2.5 py-1.5 text-xs font-bold text-[#0D3B66] pr-7 cursor-pointer focus:outline-none"
+                title="Switch Role-Based Access Control Profile"
+              >
+                <option value="trust">🏛️ Role: Applicant / Trust</option>
+                <option value="scrutiny">🔍 Role: Scrutiny Officer</option>
+                <option value="admin">⚖️ Role: Bureau Admin / RO</option>
+                <option value="bank">🏦 Role: Bank Auditor</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#64748B] pointer-events-none" />
             </div>
-            <div className="hidden lg:flex flex-col text-left">
+
+            <div className="hidden xl:flex flex-col text-left">
               <span className="text-xs font-bold text-[#0F172A] leading-tight">
-                Sh. V. K. Nambiar
+                {activeRole === "trust" ? "Dr. Rajesh K. Sharma" :
+                 activeRole === "scrutiny" ? "Sh. V. K. Nambiar" :
+                 activeRole === "admin" ? "Dr. Rameshwar V. Rao" :
+                 "Sh. Anupam Sengupta"}
               </span>
               <span className="text-[10px] text-[#64748B]">
-                ADG · WRO Mumbai Scrutiny Desk
+                {activeRole === "trust" ? "Registrar · Bharati Vidya" :
+                 activeRole === "scrutiny" ? "ADG · Scrutiny Desk" :
+                 activeRole === "admin" ? "Regional Director (WRO)" :
+                 "SBI Central Treasury"}
               </span>
             </div>
           </div>
         </div>
       </header>
-    </div>;
+    </div>
+  );
 };
+

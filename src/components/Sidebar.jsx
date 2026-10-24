@@ -7,12 +7,20 @@ import {
   FileText,
   ScrollText,
   Building2,
-  BookOpen
+  BookOpen,
+  ShieldAlert,
+  BellRing,
+  Hash,
+  GraduationCap,
+  MapPin,
+  Radio
 } from "lucide-react";
+
 export const Sidebar = ({
   currentTab,
   onSelectTab,
-  onOpenHandbook
+  onOpenHandbook,
+  activeRole
 }) => {
   const menuItems = [
     {
@@ -22,10 +30,48 @@ export const Sidebar = ({
     },
     {
       id: "scrutiny",
-      label: "Bureau Scrutiny (Dual-Pane)",
+      label: "Dual-Track OCR Desk (USP 1)",
       icon: <ShieldCheck className="w-4 h-4 shrink-0" />,
-      badge: "1 Action",
-      badgeColor: "badge-expiring text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+      badge: "OCR Desk",
+      badgeColor: "bg-blue-100 text-[#0D3B66] text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+    },
+    {
+      id: "sanctions",
+      label: "Sanctions Freeze (USP 2)",
+      icon: <ShieldAlert className="w-4 h-4 shrink-0" />,
+      badge: "Policy Gate",
+      badgeColor: "bg-red-100 text-red-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+    },
+    {
+      id: "escalation",
+      label: "Escalation Ladder (USP 3)",
+      icon: <BellRing className="w-4 h-4 shrink-0" />,
+      badge: "T-0 SCN",
+      badgeColor: "bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+    },
+    {
+      id: "calculator",
+      label: "Table 1.4 & Penalty (USP 4)",
+      icon: <Calculator className="w-4 h-4 shrink-0" />
+    },
+    {
+      id: "audit",
+      label: "SHA-256 Ledger (USP 5)",
+      icon: <Hash className="w-4 h-4 shrink-0" />,
+      badge: "CVC Audit",
+      badgeColor: "bg-purple-100 text-purple-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+    },
+    {
+      id: "sfms",
+      label: "SFMS Gateway (USP 6)",
+      icon: <Radio className="w-4 h-4 shrink-0" />,
+      badge: "MT760",
+      badgeColor: "badge-bank-verified text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+    },
+    {
+      id: "rpgf",
+      label: "Phase 5 Release & Refund",
+      icon: <RotateCcw className="w-4 h-4 shrink-0" />
     },
     {
       id: "register",
@@ -33,33 +79,19 @@ export const Sidebar = ({
       icon: <FolderPlus className="w-4 h-4 shrink-0" />
     },
     {
-      id: "calculator",
-      label: "Capital Calculator (Table 1.4)",
-      icon: <Calculator className="w-4 h-4 shrink-0" />
+      id: "scholarship",
+      label: "Yield & Scholarship Impact",
+      icon: <GraduationCap className="w-4 h-4 shrink-0" />
     },
     {
-      id: "rpgf",
-      label: "RPGF & Phase Release",
-      icon: <RotateCcw className="w-4 h-4 shrink-0" />,
-      badge: "Due",
-      badgeColor: "bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+      id: "geospatial",
+      label: "Geospatial Regional Map",
+      icon: <MapPin className="w-4 h-4 shrink-0" />
     },
     {
       id: "affidavits",
       label: "Dossiers & Affidavits",
       icon: <FileText className="w-4 h-4 shrink-0" />
-    },
-    {
-      id: "audit",
-      label: "Audit Ledger & Stepper",
-      icon: <ScrollText className="w-4 h-4 shrink-0" />
-    },
-    {
-      id: "bank-api",
-      label: "Bank Gateway & SFMS",
-      icon: <Building2 className="w-4 h-4 shrink-0" />,
-      badge: "CBS Active",
-      badgeColor: "badge-bank-verified text-[10px] font-semibold px-1.5 py-0.2 rounded-full"
     }
   ];
   return <aside className="w-64 lg:w-72 shrink-0 border-r border-[#E2E8F0] bg-white flex flex-col justify-between h-[calc(100vh-6.5rem)] sticky top-[6.5rem] select-none">
