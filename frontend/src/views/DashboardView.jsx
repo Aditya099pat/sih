@@ -24,6 +24,7 @@ export const DashboardView = ({
   onTriggerReconciliation,
   onOpenDrawer,
   onOpenTranscript,
+  onOpenScrutinyTarget,
   onSelectTab
 }) => {
   const [activeKpiFilter, setActiveKpiFilter] = useState("all");
@@ -150,7 +151,8 @@ export const DashboardView = ({
           instruments={instruments}
           onViewInstrument={onViewInstrument}
           onOpenScrutiny={(instId) => {
-            if (onSelectTab) onSelectTab("scrutiny");
+            if (onOpenScrutinyTarget) onOpenScrutinyTarget(instId);
+            else if (onSelectTab) onSelectTab("scrutiny");
           }}
           onOpenPhaseRelease={onOpenPhaseRelease}
           onOpenAffidavit={onPrepareAffidavit}

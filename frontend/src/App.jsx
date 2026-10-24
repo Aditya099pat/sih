@@ -30,6 +30,7 @@ import { AiCopilotDrawer } from "./components/modals/AiCopilotDrawer";
 import { ShowCauseNoticeModal } from "./components/modals/ShowCauseNoticeModal";
 import { DigitalSignatureModal } from "./components/modals/DigitalSignatureModal";
 import { CertifiedTranscriptModal } from "./components/modals/CertifiedTranscriptModal";
+import { RenewalComparisonModal } from "./components/modals/RenewalComparisonModal";
 import { CheckCircle2 } from "lucide-react";
 
 export default function App() {
@@ -61,6 +62,8 @@ export default function App() {
   const [isDigitalSignatureOpen, setIsDigitalSignatureOpen] = useState(false);
   const [isCertifiedTranscriptOpen, setIsCertifiedTranscriptOpen] = useState(false);
   const [transcriptTarget, setTranscriptTarget] = useState(null);
+  const [isRenewalComparisonOpen, setIsRenewalComparisonOpen] = useState(false);
+  const [renewalComparisonTarget, setRenewalComparisonTarget] = useState(null);
 
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -250,7 +253,10 @@ export default function App() {
                   setIsAffidavitOpen(true);
                 }}
                 onViewInstrument={(inst) => {
-                  setScrutinyTargetId(inst.id);
+                  setSelectedInstrument(inst);
+                }}
+                onOpenScrutinyTarget={(id) => {
+                  setScrutinyTargetId(id);
                   setCurrentTab("scrutiny");
                 }}
                 onViewDocuments={(inst) => {
@@ -369,6 +375,10 @@ export default function App() {
           setScrutinyTargetId(inst.id);
           setCurrentTab("scrutiny");
         }}
+        onOpenRenewalComparison={(inst) => {
+          setRenewalComparisonTarget(inst || selectedInstrument);
+          setIsRenewalComparisonOpen(true);
+        }}
       />
 
       {/* Dossier Drawer */}
@@ -462,6 +472,13 @@ export default function App() {
         isOpen={isCertifiedTranscriptOpen}
         onClose={() => setIsCertifiedTranscriptOpen(false)}
         instrument={transcriptTarget || instruments[0]}
+      />
+
+      {/* Side-by-Side FDR Renewal Comparison Modal */}
+      <RenewalComparisonModal
+        isOpen={isRenewalComparisonOpen}
+        onClose={() => setIsRenewalComparisonOpen(false)}
+        originalInstrument={renewalComparisonTarget || instruments[0]}
       />
     </div>
   );
