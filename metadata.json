@@ -1,0 +1,6 @@
+{
+  "name": "AICTE Security Deposit & FDR Management Portal",
+  "description": "Statutory Security Deposit & FDR Lifecycle Portal (PS26265) for AICTE, Ministry of Education, Government of India. Tracks institutional pledged capital, RPGF releases, SFMS bank linkages, and regulatory compliance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
