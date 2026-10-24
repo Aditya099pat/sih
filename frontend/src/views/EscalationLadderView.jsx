@@ -78,24 +78,21 @@ export const EscalationLadderView = ({ onOpenShowCauseModal }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E2E8F0]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#0D3B66] text-white">
+            <span className="p-1.5 rounded-md bg-[#0B2545] text-white">
               <BellRing className="w-5 h-5" />
             </span>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-[#0F172A]">
-                Multi-Stage Automated Escalation Ladder
+            <div>
+              <h1 className="text-xl font-bold text-[#0B2545]">
+                Compliance Escalation Engine
               </h1>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
-                USP 3
-              </span>
+              <p className="text-xs text-slate-500">
+                4-Tier Statutory Automated Countdown Engine • Prevents security deposits from lapsing into zero-yield dormancy
+              </p>
             </div>
           </div>
-          <p className="text-xs text-[#64748B] mt-0.5">
-            4-Tier Statutory Countdown Engine • Prevents security deposits from lapsing into zero-yield dormancy
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

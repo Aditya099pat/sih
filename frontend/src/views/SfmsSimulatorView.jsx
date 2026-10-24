@@ -118,24 +118,21 @@ export const SfmsSimulatorView = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E2E8F0]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#0D3B66] text-white">
+            <span className="p-1.5 rounded-md bg-[#0B2545] text-white">
               <Building2 className="w-5 h-5" />
             </span>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-[#0F172A]">
-                SFMS MT760 / MT799 Core Banking Gateway Simulator
+            <div>
+              <h1 className="text-xl font-bold text-[#0B2545]">
+                Core Banking SFMS Telecommunication Gateway
               </h1>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-100 text-[#0D3B66] border border-blue-200">
-                USP 6
-              </span>
+              <p className="text-xs text-slate-500">
+                Structured Financial Messaging System (SFMS MT760/MT799) Protocol Engine • Real-Time Core Banking Lien Verification
+              </p>
             </div>
           </div>
-          <p className="text-xs text-[#64748B] mt-0.5">
-            Structured Financial Messaging System (SFMS) Telecommunication Simulator • Eliminates forged physical bank letters
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

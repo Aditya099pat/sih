@@ -5,10 +5,11 @@
 @source "../../data/**/*.js";
 
 :root {
-  --primary-navy: #0D3B66;
-  --primary-navy-dark: #002546;
-  --national-saffron: #E65100;
-  --saffron-light: #FFF7ED;
+  --primary-navy: #0B2545;
+  --primary-navy-hover: #133E87;
+  --primary-navy-dark: #07182D;
+  --secondary-saffron: #D97706;
+  --secondary-saffron-light: #F59E0B;
   --surface-canvas: #F8FAFC;
   --card-surface: #FFFFFF;
   --card-border: #E2E8F0;
@@ -36,8 +37,9 @@
   }
 }
 
-/* Tabular numbers for financial and ID alignment */
-.tabular-nums, .font-mono, td, .metric-value {
+/* Monospace font for financial, hash, and ID data */
+.font-mono, .tabular-nums, code, pre {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-feature-settings: 'tnum';
   font-variant-numeric: tabular-nums;
 }
@@ -52,7 +54,7 @@
 .card-clean {
   background-color: #FFFFFF;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  box-shadow: none;
 }
 
 /* Two-tone Source Tags */

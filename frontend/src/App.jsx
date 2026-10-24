@@ -346,7 +346,7 @@ export default function App() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-[#002546] text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-xs animate-in slide-in-from-bottom-2">
+        <div className="fixed bottom-5 right-5 z-50 bg-[#07182D] text-white px-4 py-3 rounded-md shadow-md border border-slate-700 flex items-center gap-2.5 text-xs animate-in slide-in-from-bottom-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>

@@ -114,29 +114,26 @@ export const CapitalPenaltyVisualizerView = () => {
   return (
     <div className="space-y-6">
       {/* View Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E2E8F0]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#0D3B66] text-white">
+            <span className="p-1.5 rounded-md bg-[#0B2545] text-white">
               <Calculator className="w-5 h-5" />
             </span>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-[#0F172A]">
-                APH Table 1.4 Dynamic Capital & Calibrated Penalty Visualizer
+            <div>
+              <h1 className="text-xl font-bold text-[#0B2545]">
+                Statutory Capital Calculator
               </h1>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-100 text-[#0D3B66] border border-blue-200">
-                USP 4
-              </span>
+              <p className="text-xs text-slate-500">
+                APH Table 1.4 Matrix Calculation Engine with Affirmative Concessions &amp; Calibrated Closure Forfeiture Slider
+              </p>
             </div>
           </div>
-          <p className="text-xs text-[#64748B] mt-0.5">
-            Statutory AICTE Approval Process Handbook (APH) Table 1.4 calculation engine with affirmative concessions & forfeiture slider
-          </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono bg-white px-3 py-1.5 rounded-lg border border-[#E2E8F0]">
-          <span className="text-[#64748B]">Regulatory Gazette:</span>
-          <span className="font-bold text-[#0D3B66]">APH 2025-26 Ed.</span>
+        <div className="flex items-center gap-2 text-xs font-mono bg-white px-3 py-1.5 rounded-md border border-[#E2E8F0]">
+          <span className="text-slate-500">Regulatory Gazette:</span>
+          <span className="font-bold text-[#0B2545]">APH 2025-26 Ed.</span>
         </div>
       </div>
 
