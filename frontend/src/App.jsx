@@ -31,11 +31,12 @@ import { ShowCauseNoticeModal } from "./components/modals/ShowCauseNoticeModal";
 import { DigitalSignatureModal } from "./components/modals/DigitalSignatureModal";
 import { CertifiedTranscriptModal } from "./components/modals/CertifiedTranscriptModal";
 import { RenewalComparisonModal } from "./components/modals/RenewalComparisonModal";
+import { LoginPortalModal } from "./components/modals/LoginPortalModal";
 import { CheckCircle2 } from "lucide-react";
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState("dashboard");
-  const [activeRole, setActiveRole] = useState("trust"); // "trust" | "scrutiny" | "admin" | "bank"
+  const [activeRole, setActiveRole] = useState("admin"); // "admin" | "supervisor"
   const [instruments, setInstruments] = useState(INITIAL_INSTRUMENTS);
   const [auditLogs, setAuditLogs] = useState(INITIAL_AUDIT_LOGS);
   const [bankLinkages, setBankLinkages] = useState(INITIAL_BANK_LINKAGES);
@@ -64,6 +65,7 @@ export default function App() {
   const [transcriptTarget, setTranscriptTarget] = useState(null);
   const [isRenewalComparisonOpen, setIsRenewalComparisonOpen] = useState(false);
   const [renewalComparisonTarget, setRenewalComparisonTarget] = useState(null);
+  const [isLoginPortalOpen, setIsLoginPortalOpen] = useState(false);
 
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -219,10 +221,11 @@ export default function App() {
         onRoleChange={setActiveRole}
         onOpenAiCopilot={() => setIsAiCopilotOpen(true)}
         onOpenDigitalSignature={() => setIsDigitalSignatureOpen(true)}
+        onOpenLoginPortal={() => setIsLoginPortalOpen(true)}
       />
 
       {/* Main Container with Sidebar + View */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex">
         {/* Sidebar */}
         <Sidebar
           currentTab={currentTab}
@@ -232,7 +235,7 @@ export default function App() {
         />
 
         {/* Viewport Canvas */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-[#F8FAFC]">
+        <main className="flex-1 p-4 lg:p-6 bg-[#F8FAFC]">
           <div className="max-w-7xl mx-auto">
             {/* 1. Dashboard & Instruments */}
             {currentTab === "dashboard" && (
@@ -479,6 +482,23 @@ export default function App() {
         isOpen={isRenewalComparisonOpen}
         onClose={() => setIsRenewalComparisonOpen(false)}
         originalInstrument={renewalComparisonTarget || instruments[0]}
+      />
+
+      {/* Official Login Portal Modal (Administrator & Supervisor) */}
+      <LoginPortalModal
+        isOpen={isLoginPortalOpen}
+        onClose={() => setIsLoginPortalOpen(false)}
+        activeRole={activeRole}
+        onLogin={(role) => {
+          setActiveRole(role);
+          showToast(
+            `Successfully authenticated as ${
+              role === "supervisor"
+                ? "Regional Scrutiny Supervisor (WRO Mumbai)"
+                : "Central Bureau Administrator (AICTE HQ)"
+            }!`
+          );
+        }}
       />
     </div>
   );
