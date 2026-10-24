@@ -4,7 +4,7 @@ import {
   INITIAL_AUDIT_LOGS,
   INITIAL_BANK_LINKAGES,
   INITIAL_DOSSIER_DOCS
-} from "./data/mockData";
+} from "@data/mockData";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { DashboardView } from "./views/DashboardView";

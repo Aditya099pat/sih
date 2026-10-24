@@ -2,6 +2,7 @@
 @source "./**/*.jsx";
 @source "./**/*.js";
 @source "../index.html";
+@source "../../data/**/*.js";
 
 :root {
   --primary-navy: #0D3B66;

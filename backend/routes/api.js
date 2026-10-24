@@ -8,7 +8,7 @@ import {
   initialScholarshipYield, 
   initialRegionalData,
   generateSha256 
-} from '../data/store.js';
+} from '../../data/store.js';
 
 const router = Router();
 

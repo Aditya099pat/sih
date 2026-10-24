@@ -6,9 +6,16 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./frontend/src/*"],
+      "@data/*": ["./data/*"],
+      "@backend/*": ["./backend/*"]
     }
   },
-  "include": ["src/**/*", "vite.config.js"],
+  "include": [
+    "frontend/src/**/*",
+    "backend/**/*",
+    "data/**/*",
+    "vite.config.js"
+  ],
   "exclude": ["node_modules", "dist"]
 }

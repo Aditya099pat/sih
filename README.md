@@ -52,62 +52,68 @@ The portal features a 4-role identity switcher in the top navigation bar:
 
 ---
 
-## 📁 Repository Structure
+## 📁 Repository Structure (3-Subfolder Architecture)
+
+The project is structured into three clean, dedicated modules: **`frontend`**, **`backend`**, and **`data`**:
 
 ```
 aicte-security-deposit-&-fdr-management-portal/
-├── index.html                      # HTML5 entry template with GovTech typography & favicon
-├── jsconfig.json                   # Path alias mappings (@/ -> root)
-├── package.json                    # Dependencies, scripts, and ESM configuration
+├── jsconfig.json                   # Path alias mappings (@/, @data/, @backend/)
+├── package.json                    # Unified NPM scripts & dependencies
 ├── package-lock.json               # Deterministic dependency lockfile
-├── server.js                       # Express API server entry point
-├── vite.config.js                  # Vite configuration with embedded Express API middleware
-├── public/                         # Static assets and media files
-├── server/                         # Backend Core Architecture
-│   ├── data/
-│   │   └── store.js                # State repository (instruments, sanctions, escalation, SFMS, ledger)
+├── vite.config.js                  # Vite configuration hosting frontend + backend middleware
+├── dist/                           # Production build output bundle
+│
+├── 📂 backend/                     # Backend API & Gateway Server
+│   ├── server.js                   # Express core gateway application & middleware setup
 │   └── routes/
-│       └── api.js                  # REST API endpoints for all 6 USPs & analytics
-└── src/                            # Frontend Architecture (React JSX)
-    ├── App.jsx                     # Master application container, state orchestration & modal routing
-    ├── index.css                   # GovTech design system tokens, Tailwind CSS directives & components
-    ├── main.jsx                    # React 19 root bootstrap
-    ├── types.js                    # JSDoc type definitions & navigation constants
-    ├── components/                 # Reusable UI Components
-    │   ├── AicteLogo.jsx           # Vector AICTE emblem
-    │   ├── DashboardRightPanel.jsx # Bank portfolio donut chart & lifecycle stepper
-    │   ├── Header.jsx              # Official Gov strip, tricolor ribbon, search, RBAC, AI Copilot
-    │   ├── InstrumentsTable.jsx    # 52px dense GovTech data table with filters & pagination
-    │   ├── Sidebar.jsx             # Collapsible primary navigation with status badges
-    │   ├── StatCards.jsx           # 4 Aggregated KPI metric cards
-    │   ├── StatutoryAlert.jsx      # Sticky statutory alert banner
-    │   └── modals/                 # Dialogs & Slide-out Drawers
-    │       ├── AffidavitRenewalModal.jsx    # Affidavit-6 rollover submission
-    │       ├── AiCopilotDrawer.jsx          # AI Regulatory Copilot chatbot
-    │       ├── BankVerificationModal.jsx    # Core Banking SFMS verification
-    │       ├── CertifiedTranscriptModal.jsx # Certified transcript with dynamic QR
-    │       ├── DigitalSignatureModal.jsx    # Aadhaar e-Sign & Class-3 DSC token
-    │       ├── DossierDrawer.jsx            # Multi-document dossier drawer
-    │       ├── ExportDossierModal.jsx       # Certified PDF & Excel dossier export
-    │       ├── HandbookModal.jsx            # APH 2025-26 regulation reference
-    │       ├── InstrumentDetailModal.jsx    # 540px slide-out instrument inspection drawer
-    │       ├── PhaseReleaseModal.jsx        # Phase-5 statutory release approval chain
-    │       └── ShowCauseNoticeModal.jsx     # Draft Statutory Show-Cause Notice order
-    ├── data/
-    │   └── mockData.js             # Initial baseline client seed data & currency formatters
-    └── views/                      # Feature Views & Desks
-        ├── BureauScrutinyView.jsx           # USP 1: Dual-Track OCR Discrepancy Desk
-        ├── CapitalPenaltyVisualizerView.jsx # USP 4: Table 1.4 Capital & Penalty Visualizer
-        ├── CryptographicLedgerView.jsx      # USP 5: SHA-256 Tamper-Proof Audit Ledger
-        ├── DashboardView.jsx                # Main Executive Portfolio Dashboard
-        ├── DossiersAffidavitsView.jsx       # Baseline: Dossiers & Affidavits
-        ├── EscalationLadderView.jsx         # USP 3: Multi-Stage Escalation Ladder
-        ├── GeospatialMapView.jsx            # Value-Add: Geospatial Regional Map
-        ├── RegisterDepositView.jsx          # Baseline: Multi-step Deposit Registration
-        ├── RpgfTrackerView.jsx              # Baseline: Phase 5 Release & Rollover
-        ├── SanctionFreezeView.jsx           # USP 2: Policy-as-Code Sanction Freezes
-        ├── ScholarshipAnalyticsView.jsx     # Value-Add: Yield & Scholarship Reinvestment
-        └── SfmsSimulatorView.jsx            # USP 6: SFMS MT760/MT799 Bank Simulator
+│       └── api.js                  # Express REST API endpoints (6 USPs, calculator, SFMS, ledger)
+│
+├── 📂 data/                        # Shared Data Stores & Initial State Repositories
+│   ├── store.js                    # In-memory backend database (instruments, sanctions, escalation, SFMS, ledger)
+│   └── mockData.js                 # Frontend baseline seed data, types, & Indian currency formatting utilities
+│
+└── 📂 frontend/                    # React 19 Frontend Application
+    ├── index.html                  # HTML5 entry template with GovTech typography & favicon
+    ├── public/                     # Static public assets
+    └── src/                        # React JSX source code
+        ├── App.jsx                 # Master application container, state orchestration & modal routing
+        ├── index.css               # GovTech design system tokens, Tailwind CSS directives & components
+        ├── main.jsx                # React 19 root bootstrap
+        ├── types.js                # JSDoc type definitions & navigation constants
+        ├── components/             # Reusable UI Components
+        │   ├── AicteLogo.jsx       # Vector AICTE emblem
+        │   ├── DashboardRightPanel.jsx # Bank portfolio donut chart & lifecycle stepper
+        │   ├── Header.jsx          # Official Gov strip, tricolor ribbon, search, RBAC, AI Copilot
+        │   ├── InstrumentsTable.jsx# 52px dense GovTech data table with filters & pagination
+        │   ├── Sidebar.jsx         # Collapsible primary navigation with status badges
+        │   ├── StatCards.jsx       # 4 Aggregated KPI metric cards
+        │   ├── StatutoryAlert.jsx  # Sticky statutory alert banner
+        │   └── modals/             # Dialogs & Slide-out Drawers
+        │       ├── AffidavitRenewalModal.jsx    # Affidavit-6 rollover submission
+        │       ├── AiCopilotDrawer.jsx          # AI Regulatory Copilot chatbot
+        │       ├── BankVerificationModal.jsx    # Core Banking SFMS verification
+        │       ├── CertifiedTranscriptModal.jsx # Certified transcript with dynamic QR
+        │       ├── DigitalSignatureModal.jsx    # Aadhaar e-Sign & Class-3 DSC token
+        │       ├── DossierDrawer.jsx            # Multi-document dossier drawer
+        │       ├── ExportDossierModal.jsx       # Certified PDF & Excel dossier export
+        │       ├── HandbookModal.jsx            # APH 2025-26 regulation reference
+        │       ├── InstrumentDetailModal.jsx    # 540px slide-out instrument inspection drawer
+        │       ├── PhaseReleaseModal.jsx        # Phase-5 statutory release approval chain
+        │       └── ShowCauseNoticeModal.jsx     # Draft Statutory Show-Cause Notice order
+        └── views/                  # Feature Views & Desks
+            ├── BureauScrutinyView.jsx           # USP 1: Dual-Track OCR Discrepancy Desk
+            ├── CapitalPenaltyVisualizerView.jsx # USP 4: Table 1.4 Capital & Penalty Visualizer
+            ├── CryptographicLedgerView.jsx      # USP 5: SHA-256 Tamper-Proof Audit Ledger
+            ├── DashboardView.jsx                # Main Executive Portfolio Dashboard
+            ├── DossiersAffidavitsView.jsx       # Baseline: Dossiers & Affidavits
+            ├── EscalationLadderView.jsx         # USP 3: Multi-Stage Escalation Ladder
+            ├── GeospatialMapView.jsx            # Value-Add: Geospatial Regional Map
+            ├── RegisterDepositView.jsx          # Baseline: Multi-step Deposit Registration
+            ├── RpgfTrackerView.jsx              # Baseline: Phase 5 Release & Rollover
+            ├── SanctionFreezeView.jsx           # USP 2: Policy-as-Code Sanction Freezes
+            ├── ScholarshipAnalyticsView.jsx     # Value-Add: Yield & Scholarship Reinvestment
+            └── SfmsSimulatorView.jsx            # USP 6: SFMS MT760/MT799 Bank Simulator
 ```
 
 ---
