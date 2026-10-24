@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   ChevronDown,
@@ -7,7 +7,11 @@ import {
   Landmark,
   Clock,
   AlertCircle,
-  Layers
+  Layers,
+  Calendar,
+  RotateCcw,
+  FileCheck2,
+  Filter
 } from "lucide-react";
 import { FORMAT_INDIAN_CURRENCY } from "@data/mockData";
 
@@ -16,24 +20,47 @@ export const InstrumentsTable = ({
   onViewInstrument,
   onViewDocuments,
   onInitiateRpgf,
-  onOpenDrawer
+  onOpenDrawer,
+  externalFilter = "all",
+  onClearExternalFilter
 }) => {
   const [selectedIds, setSelectedIds] = useState(["fdr-1"]);
-  const [activeFilterTab, setActiveFilterTab] = useState("all");
+  const [activeFilterTab, setActiveFilterTab] = useState(externalFilter || "all");
   const [bankFilter, setBankFilter] = useState("all");
-  const [expiryFilter, setExpiryFilter] = useState("all");
+  const [expiryWindow, setExpiryWindow] = useState("all"); // 'all', '7', '15', '30', '60', '90'
   const [tableSearch, setTableSearch] = useState("");
 
+  // Sync external filter when clicked from StatCards
+  useEffect(() => {
+    if (externalFilter) {
+      setActiveFilterTab(externalFilter);
+      if (externalFilter === "expiring") {
+        setExpiryWindow("60");
+      }
+    }
+  }, [externalFilter]);
+
   const filteredInstruments = instruments.filter((inst) => {
+    // Primary Tab Filter
     if (activeFilterTab === "verified" && !inst.bankConfirmed) return false;
     if (activeFilterTab === "expiring" && inst.remainingDays > 90) return false;
     if (activeFilterTab === "discrepancy" && !inst.hasDiscrepancy) return false;
+    if (activeFilterTab === "pending" && inst.bankConfirmed) return false;
+    if (activeFilterTab === "release" && inst.remainingDays > 60) return false;
+
+    // Bank Filter
     if (bankFilter !== "all") {
       if (!inst.bankName.toLowerCase().includes(bankFilter.toLowerCase())) return false;
     }
-    if (expiryFilter === "30" && inst.remainingDays > 30) return false;
-    if (expiryFilter === "60" && inst.remainingDays > 60) return false;
-    if (expiryFilter === "90" && inst.remainingDays > 90) return false;
+
+    // Configurable Maturity Window Filter (7, 15, 30, 60, 90 Days)
+    if (expiryWindow === "7" && inst.remainingDays > 7) return false;
+    if (expiryWindow === "15" && inst.remainingDays > 15) return false;
+    if (expiryWindow === "30" && inst.remainingDays > 30) return false;
+    if (expiryWindow === "60" && inst.remainingDays > 60) return false;
+    if (expiryWindow === "90" && inst.remainingDays > 90) return false;
+
+    // Search Query
     if (tableSearch.trim()) {
       const q = tableSearch.toLowerCase();
       const match =
@@ -72,7 +99,7 @@ export const InstrumentsTable = ({
         {/* Left: Filter Tabs & Search */}
         <div className="flex items-center gap-2 flex-wrap flex-1">
           {/* Quick Search */}
-          <div className="relative min-w-[240px]">
+          <div className="relative min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
@@ -83,10 +110,14 @@ export const InstrumentsTable = ({
             />
           </div>
 
-          {/* Filter Pills */}
+          {/* Primary Filter Tabs */}
           <div className="inline-flex rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-0.5 text-xs">
             <button
-              onClick={() => setActiveFilterTab("all")}
+              onClick={() => {
+                setActiveFilterTab("all");
+                setExpiryWindow("all");
+                if (onClearExternalFilter) onClearExternalFilter();
+              }}
               className={`px-3 py-1 font-semibold rounded transition-colors cursor-pointer ${
                 activeFilterTab === "all"
                   ? "bg-white text-[#0B2545] shadow-2xs font-bold"
@@ -107,7 +138,10 @@ export const InstrumentsTable = ({
               Bank Verified
             </button>
             <button
-              onClick={() => setActiveFilterTab("expiring")}
+              onClick={() => {
+                setActiveFilterTab("expiring");
+                setExpiryWindow("60");
+              }}
               className={`px-3 py-1 font-semibold rounded transition-colors cursor-pointer flex items-center gap-1 ${
                 activeFilterTab === "expiring"
                   ? "bg-white text-[#D97706] shadow-2xs font-bold"
@@ -115,7 +149,7 @@ export const InstrumentsTable = ({
               }`}
             >
               <Clock className="w-3 h-3 text-[#D97706]" />
-              Expiring &lt; 90D
+              Maturing Windows
             </button>
             <button
               onClick={() => setActiveFilterTab("discrepancy")}
@@ -128,24 +162,38 @@ export const InstrumentsTable = ({
               <AlertCircle className="w-3 h-3 text-[#DC2626]" />
               Discrepancy
             </button>
+            <button
+              onClick={() => setActiveFilterTab("release")}
+              className={`px-3 py-1 font-semibold rounded transition-colors cursor-pointer flex items-center gap-1 ${
+                activeFilterTab === "release"
+                  ? "bg-white text-[#059669] shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <RotateCcw className="w-3 h-3 text-[#059669]" />
+              Release Ready
+            </button>
           </div>
         </div>
 
-        {/* Right: Dropdown Filters */}
-        <div className="flex items-center gap-2">
-          {/* Expiry Range Filter */}
-          <div className="relative">
-            <select
-              value={expiryFilter}
-              onChange={(e) => setExpiryFilter(e.target.value)}
-              className="appearance-none bg-[#F8FAFC] border border-[#E2E8F0] rounded-md px-2.5 py-1.5 text-xs text-[#0F172A] pr-6 focus:outline-none focus:border-[#0B2545] cursor-pointer"
-            >
-              <option value="all">Expiry: All Dates</option>
-              <option value="30">Matures in 30 Days</option>
-              <option value="60">Matures in 60 Days</option>
-              <option value="90">Matures in 90 Days</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+        {/* Right: Configurable Maturity Windows & Bank Dropdown */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Configurable Alert Windows Pill */}
+          <div className="flex items-center gap-1 text-[11px] font-semibold bg-[#F8FAFC] border border-[#E2E8F0] px-2 py-1 rounded-md">
+            <span className="text-slate-500 uppercase text-[10px]">Maturity Window:</span>
+            {["all", "15", "30", "60"].map((w) => (
+              <button
+                key={w}
+                onClick={() => setExpiryWindow(w)}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors cursor-pointer ${
+                  expiryWindow === w
+                    ? "bg-[#0B2545] text-white font-bold"
+                    : "text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                {w === "all" ? "All" : `<${w}D`}
+              </button>
+            ))}
           </div>
 
           {/* Bank Filter */}
@@ -166,7 +214,7 @@ export const InstrumentsTable = ({
         </div>
       </div>
 
-      {/* Main Full-Width Data Table with 52px row height */}
+      {/* Main Full-Width Data Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -182,10 +230,10 @@ export const InstrumentsTable = ({
               <th className="py-3 px-3">Institution &amp; PID</th>
               <th className="py-3 px-3">FDR Reference No.</th>
               <th className="py-3 px-3">Issuing Bank &amp; Branch</th>
-              <th className="py-3 px-3">Verification Source</th>
-              <th className="py-3 px-3 text-right">Amount (₹)</th>
-              <th className="py-3 px-3">Maturity Date</th>
-              <th className="py-3 px-3 text-center">Status</th>
+              <th className="py-3 px-3">Verification Telemetry</th>
+              <th className="py-3 px-3 text-right">Pledged Amount (₹)</th>
+              <th className="py-3 px-3">Maturity Date &amp; Window</th>
+              <th className="py-3 px-3 text-center">Statutory Status</th>
               <th className="py-3 px-3 text-right">Quick Actions</th>
             </tr>
           </thead>
@@ -279,17 +327,23 @@ export const InstrumentsTable = ({
                     </div>
                   </td>
 
-                  {/* Maturity Date */}
+                  {/* Maturity Date & Countdown */}
                   <td className="py-2.5 px-3">
-                    <div className="font-mono text-[#0F172A] tabular-nums">
+                    <div className="font-mono text-[#0F172A] tabular-nums font-medium">
                       {inst.maturityDate}
                     </div>
                     <div
                       className={`text-[11px] font-semibold ${
-                        inst.remainingDays <= 45 ? "text-[#D97706]" : "text-slate-500"
+                        inst.remainingDays <= 15
+                          ? "text-rose-700 font-bold"
+                          : inst.remainingDays <= 45
+                          ? "text-amber-800"
+                          : "text-slate-500"
                       }`}
                     >
-                      {inst.remainingDays <= 45
+                      {inst.remainingDays <= 15
+                        ? `🚨 ${inst.remainingDays} days (URGENT)`
+                        : inst.remainingDays <= 45
                         ? `⚠️ ${inst.remainingDays} days left`
                         : `${inst.remainingDays} days remaining`}
                     </div>
@@ -343,7 +397,7 @@ export const InstrumentsTable = ({
         </table>
       </div>
 
-      {/* Table Footer Summary */}
+      {/* Table Footer Summary with Pagination */}
       <div className="p-3 border-t border-[#E2E8F0] bg-[#F8FAFC] flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 gap-2">
         <div className="flex items-center gap-2">
           <span>
@@ -354,7 +408,7 @@ export const InstrumentsTable = ({
         </div>
         <div className="flex items-center gap-4">
           <span>
-            Total Pledged Value:{" "}
+            Pledged Capital Total:{" "}
             <strong className="text-[#0F172A] font-mono">
               {FORMAT_INDIAN_CURRENCY(filteredInstruments.reduce((s, i) => s + i.principalAmount, 0))}
             </strong>

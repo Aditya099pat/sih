@@ -269,6 +269,7 @@ export default function App() {
                   setTranscriptTarget(inst);
                   setIsCertifiedTranscriptOpen(true);
                 }}
+                onSelectTab={setCurrentTab}
               />
             )}
 
@@ -433,6 +434,11 @@ export default function App() {
       <AiCopilotDrawer
         isOpen={isAiCopilotOpen}
         onClose={() => setIsAiCopilotOpen(false)}
+        onSelectTab={setCurrentTab}
+        onViewInstrument={(inst) => {
+          setSelectedInstrument(inst);
+          setIsAiCopilotOpen(false);
+        }}
       />
 
       {/* Value-Add: Show-Cause Notice Preview Modal */}
