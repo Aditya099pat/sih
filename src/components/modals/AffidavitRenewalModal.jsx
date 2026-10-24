@@ -1,30 +1,20 @@
-import React, { useState } from 'react';
-import { X, FileText, CheckCircle2, Download, Printer, Shield } from 'lucide-react';
-import { FDRInstrument } from '../../types';
-
-interface AffidavitRenewalModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  instrument: FDRInstrument | null;
-}
-
-export const AffidavitRenewalModal: React.FC<AffidavitRenewalModalProps> = ({
+import { useState } from "react";
+import { X, FileText, Download, Printer } from "lucide-react";
+export const AffidavitRenewalModal = ({
   isOpen,
   onClose,
   instrument
 }) => {
-  const [eStampNumber, setEStampNumber] = useState('IN-MH889210947721A');
-  const [notaryAdvocate, setNotaryAdvocate] = useState('Adv. K. R. Deshmukh (Reg: BOM-4410/2012)');
+  const [eStampNumber, setEStampNumber] = useState("IN-MH889210947721A");
+  const [notaryAdvocate, setNotaryAdvocate] = useState("Adv. K. R. Deshmukh (Reg: BOM-4410/2012)");
   const [isGenerated, setIsGenerated] = useState(false);
-
   if (!isOpen) return null;
-
-  const fdrRef = instrument?.ref || 'FDR-SBIN-2018-09';
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+  const fdrRef = instrument?.ref || "FDR-SBIN-2018-09";
+  return <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
       <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
-        {/* Header */}
+        {
+    /* Header */
+  }
         <div className="p-4 bg-[#002546] text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-amber-400" />
@@ -38,30 +28,34 @@ export const AffidavitRenewalModal: React.FC<AffidavitRenewalModalProps> = ({
           </button>
         </div>
 
-        {/* Content */}
+        {
+    /* Content */
+  }
         <div className="p-5 overflow-y-auto space-y-4 text-xs text-slate-700">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] font-bold text-slate-700 block mb-1">e-Stamp Certificate No.</label>
               <input
-                type="text"
-                value={eStampNumber}
-                onChange={(e) => setEStampNumber(e.target.value)}
-                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg font-mono text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none"
-              />
+    type="text"
+    value={eStampNumber}
+    onChange={(e) => setEStampNumber(e.target.value)}
+    className="w-full px-3 py-1.5 border border-slate-200 rounded-lg font-mono text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none"
+  />
             </div>
             <div>
               <label className="text-[11px] font-bold text-slate-700 block mb-1">Notary / Oath Commissioner</label>
               <input
-                type="text"
-                value={notaryAdvocate}
-                onChange={(e) => setNotaryAdvocate(e.target.value)}
-                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none"
-              />
+    type="text"
+    value={notaryAdvocate}
+    onChange={(e) => setNotaryAdvocate(e.target.value)}
+    className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none"
+  />
             </div>
           </div>
 
-          {/* Legal Text Certificate Preview */}
+          {
+    /* Legal Text Certificate Preview */
+  }
           <div className="p-6 border-2 border-slate-300 rounded-xl bg-amber-50/20 space-y-3 font-serif">
             <div className="text-center pb-3 border-b border-slate-300">
               <span className="text-[10px] uppercase font-bold text-slate-500 font-sans tracking-widest block">
@@ -103,38 +97,39 @@ export const AffidavitRenewalModal: React.FC<AffidavitRenewalModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
+        {
+    /* Footer */
+  }
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
           <button
-            onClick={() => window.print()}
-            className="px-3 py-1.5 text-xs text-slate-700 bg-white border border-slate-300 rounded-lg flex items-center gap-1.5 hover:bg-slate-50"
-          >
+    onClick={() => window.print()}
+    className="px-3 py-1.5 text-xs text-slate-700 bg-white border border-slate-300 rounded-lg flex items-center gap-1.5 hover:bg-slate-50"
+  >
             <Printer className="w-3.5 h-3.5" /> Print Draft
           </button>
 
           <div className="flex items-center gap-2">
             <button
-              onClick={onClose}
-              className="px-3.5 py-1.5 text-xs text-slate-600 hover:text-slate-900"
-            >
+    onClick={onClose}
+    className="px-3.5 py-1.5 text-xs text-slate-600 hover:text-slate-900"
+  >
               Cancel
             </button>
             <button
-              onClick={() => {
-                setIsGenerated(true);
-                setTimeout(() => {
-                  alert('Affidavit-6 signed and registered in Dossier!');
-                  onClose();
-                }, 1000);
-              }}
-              className="px-4 py-2 text-xs font-semibold text-white bg-[#0D3B66] hover:bg-[#002546] rounded-lg flex items-center gap-1.5 cursor-pointer"
-            >
+    onClick={() => {
+      setIsGenerated(true);
+      setTimeout(() => {
+        alert("Affidavit-6 signed and registered in Dossier!");
+        onClose();
+      }, 1e3);
+    }}
+    className="px-4 py-2 text-xs font-semibold text-white bg-[#0D3B66] hover:bg-[#002546] rounded-lg flex items-center gap-1.5 cursor-pointer"
+  >
               <Download className="w-3.5 h-3.5 text-amber-400" />
-              {isGenerated ? 'Generating & Attesting...' : 'Digitally Sign & Register'}
+              {isGenerated ? "Generating & Attesting..." : "Digitally Sign & Register"}
             </button>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };

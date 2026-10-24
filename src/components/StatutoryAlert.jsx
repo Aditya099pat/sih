@@ -1,19 +1,15 @@
-import React from 'react';
-import { Bell, FileSignature, CalendarCheck } from 'lucide-react';
-
-interface StatutoryAlertProps {
-  onScheduleVerification: () => void;
-  onPrepareAffidavit: () => void;
-}
-
-export const StatutoryAlert: React.FC<StatutoryAlertProps> = ({
+import { Bell, FileSignature, CalendarCheck } from "lucide-react";
+export const StatutoryAlert = ({
+  instruments,
   onScheduleVerification,
-  onPrepareAffidavit
+  onPrepareAffidavit,
+  onOpenPhaseRelease
 }) => {
-  return (
-    <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-xl p-4 lg:p-5 shadow-2xs">
+  return <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-xl p-4 lg:p-5 shadow-2xs">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Left: Icon and Notice */}
+        {
+    /* Left: Icon and Notice */
+  }
         <div className="flex items-start gap-3.5">
           <div className="p-2 rounded-lg bg-[#FEF3C7] text-[#D97706] shrink-0 mt-0.5">
             <Bell className="w-5 h-5 text-[#D97706]" />
@@ -36,25 +32,26 @@ export const StatutoryAlert: React.FC<StatutoryAlertProps> = ({
           </div>
         </div>
 
-        {/* Right: Actions */}
+        {
+    /* Right: Actions */
+  }
         <div className="flex items-center gap-2.5 shrink-0 self-end lg:self-center">
           <button
-            onClick={onScheduleVerification}
-            className="px-3.5 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
-          >
+    onClick={onScheduleVerification}
+    className="px-3.5 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+  >
             <CalendarCheck className="w-3.5 h-3.5 text-slate-600" />
             Schedule Bank Verification
           </button>
 
           <button
-            onClick={onPrepareAffidavit}
-            className="px-4 py-2 text-xs font-semibold text-white bg-[#002546] hover:bg-[#0D3B66] rounded-lg transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
-          >
+    onClick={onPrepareAffidavit}
+    className="px-4 py-2 text-xs font-semibold text-white bg-[#002546] hover:bg-[#0D3B66] rounded-lg transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+  >
             <FileSignature className="w-3.5 h-3.5 text-amber-400" />
             Prepare Affidavit-6 Renewal
           </button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };

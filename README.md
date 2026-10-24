@@ -1,20 +1,32 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# AICTE Security Deposit & FDR Management Portal (PS26265)
 
-# Run and deploy your AI Studio app
+Statutory Security Deposit & FDR Lifecycle Portal for All India Council for Technical Education (AICTE), Ministry of Education, Government of India.
 
-This contains everything you need to run your app locally.
+Built with **React (JavaScript / JSX)**, **Vite**, and **Tailwind CSS**.
 
-View your app in AI Studio: https://ai.studio/apps/57f55435-006a-447a-bb81-8fe4c39ee861
+---
 
-## Run Locally
+## 🚀 Getting Started
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js (v18+) and npm
 
+### 1. Install dependencies
+```bash
+npm install
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 2. Start local development server
+```bash
+npm run dev
+```
+The application will launch on [http://localhost:3000](http://localhost:3000).
+
+### 3. Build for production
+```bash
+npm run build
+```
+
+### 4. Preview production build locally
+```bash
+npm run preview
+```

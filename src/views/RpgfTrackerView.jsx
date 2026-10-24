@@ -1,20 +1,13 @@
-import React from 'react';
-import { RotateCcw, Calendar, CheckCircle2, Clock, AlertTriangle, ArrowRight, ShieldCheck, Download } from 'lucide-react';
-import { FDRInstrument } from '../types';
-import { FORMAT_INDIAN_CURRENCY } from '../data/mockData';
-
-interface RpgfTrackerViewProps {
-  instruments: FDRInstrument[];
-  onInitiateRelease: (inst: FDRInstrument) => void;
-}
-
-export const RpgfTrackerView: React.FC<RpgfTrackerViewProps> = ({
+import { RotateCcw, Clock, AlertTriangle, ArrowRight } from "lucide-react";
+import { FORMAT_INDIAN_CURRENCY } from "../data/mockData";
+export const RpgfTrackerView = ({
   instruments,
   onInitiateRelease
 }) => {
-  return (
-    <div className="space-y-6">
-      {/* Header */}
+  return <div className="space-y-6">
+      {
+    /* Header */
+  }
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
@@ -35,7 +28,9 @@ export const RpgfTrackerView: React.FC<RpgfTrackerViewProps> = ({
         </div>
       </div>
 
-      {/* Overview Cards */}
+      {
+    /* Overview Cards */
+  }
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Security Capital</span>
@@ -56,30 +51,27 @@ export const RpgfTrackerView: React.FC<RpgfTrackerViewProps> = ({
         </div>
       </div>
 
-      {/* 8-Year Timeline Cards for Each Instrument */}
+      {
+    /* 8-Year Timeline Cards for Each Instrument */
+  }
       <div className="space-y-4">
         <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
           Multi-Year Maturity Timelines & Status
         </h3>
 
         {instruments.map((inst) => {
-          const isMaturingSoon = inst.remainingDays <= 90;
-          return (
-            <div
-              key={inst.id}
-              className={`bg-white rounded-xl border p-5 shadow-2xs space-y-4 transition-all ${
-                isMaturingSoon ? 'border-amber-300 ring-1 ring-amber-200' : 'border-slate-200'
-              }`}
-            >
+    const isMaturingSoon = inst.remainingDays <= 90;
+    return <div
+      key={inst.id}
+      className={`bg-white rounded-xl border p-5 shadow-2xs space-y-4 transition-all ${isMaturingSoon ? "border-amber-300 ring-1 ring-amber-200" : "border-slate-200"}`}
+    >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-bold text-sm text-slate-900">{inst.ref}</span>
                     <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        isMaturingSoon ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                      }`}
-                    >
+      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${isMaturingSoon ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}
+    >
                       {inst.statutoryStatus}
                     </span>
                   </div>
@@ -94,7 +86,9 @@ export const RpgfTrackerView: React.FC<RpgfTrackerViewProps> = ({
                 </div>
               </div>
 
-              {/* Progress Milestones (Year 1 to Year 8) */}
+              {
+      /* Progress Milestones (Year 1 to Year 8) */
+    }
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-[11px] text-slate-500">
                   <span>Issued: {inst.issueDate}</span>
@@ -102,13 +96,13 @@ export const RpgfTrackerView: React.FC<RpgfTrackerViewProps> = ({
                   <span>Maturity: {inst.maturityDate}</span>
                 </div>
 
-                {/* Bar */}
+                {
+      /* Bar */
+    }
                 <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      isMaturingSoon ? 'bg-amber-500 w-[98%]' : 'bg-[#0D3B66] w-[65%]'
-                    }`}
-                  ></div>
+      className={`h-full rounded-full transition-all ${isMaturingSoon ? "bg-amber-500 w-[98%]" : "bg-[#0D3B66] w-[65%]"}`}
+    />
                 </div>
 
                 <div className="flex justify-between text-[10px] text-slate-400 pt-0.5">
@@ -120,9 +114,10 @@ export const RpgfTrackerView: React.FC<RpgfTrackerViewProps> = ({
                 </div>
               </div>
 
-              {/* Action Banner if Maturing */}
-              {isMaturingSoon && (
-                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200/80 flex items-center justify-between flex-wrap gap-2">
+              {
+      /* Action Banner if Maturing */
+    }
+              {isMaturingSoon && <div className="p-3 bg-amber-50 rounded-lg border border-amber-200/80 flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2 text-xs text-amber-900 font-medium">
                     <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>
@@ -131,17 +126,14 @@ export const RpgfTrackerView: React.FC<RpgfTrackerViewProps> = ({
                   </div>
 
                   <button
-                    onClick={() => onInitiateRelease(inst)}
-                    className="px-3 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
+      onClick={() => onInitiateRelease(inst)}
+      className="px-3 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+    >
                     Apply Phase-5 Release <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                </div>}
+            </div>;
+  })}
       </div>
-    </div>
-  );
+    </div>;
 };

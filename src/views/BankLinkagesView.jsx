@@ -1,31 +1,23 @@
-import React, { useState } from 'react';
-import { Building2, RefreshCw, CheckCircle2, Activity, Plus, ShieldCheck, ArrowRight } from 'lucide-react';
-import { BankLinkage } from '../types';
-
-interface BankLinkagesViewProps {
-  bankLinkages: BankLinkage[];
-  onTriggerReconciliation: () => void;
-}
-
-export const BankLinkagesView: React.FC<BankLinkagesViewProps> = ({
+import { useState } from "react";
+import { Building2, RefreshCw, CheckCircle2, Activity, ShieldCheck } from "lucide-react";
+export const BankLinkagesView = ({
   bankLinkages,
   onTriggerReconciliation
 }) => {
   const [isPinging, setIsPinging] = useState(false);
-  const [pingResult, setPingResult] = useState<string | null>(null);
-
-  const handleTestPing = (bank: BankLinkage) => {
+  const [pingResult, setPingResult] = useState(null);
+  const handleTestPing = (bank) => {
     setIsPinging(true);
     setPingResult(null);
     setTimeout(() => {
       setIsPinging(false);
       setPingResult(`SFMS MT799 Heartbeat to ${bank.bankName} returned HTTP 200 OK (${bank.latencyMs}ms). Lien verification positive.`);
-    }, 1000);
+    }, 1e3);
   };
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
+  return <div className="space-y-6">
+      {
+    /* Header */
+  }
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
@@ -40,39 +32,38 @@ export const BankLinkagesView: React.FC<BankLinkagesViewProps> = ({
         </div>
 
         <button
-          onClick={onTriggerReconciliation}
-          className="px-3.5 py-2 text-xs font-bold text-white bg-[#0D3B66] hover:bg-[#002546] rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-        >
+    onClick={onTriggerReconciliation}
+    className="px-3.5 py-2 text-xs font-bold text-white bg-[#0D3B66] hover:bg-[#002546] rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+  >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Synchronize All Bank Gateways</span>
         </button>
       </div>
 
-      {pingResult && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
+      {pingResult && <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{pingResult}</span>
-        </div>
-      )}
+        </div>}
 
-      {/* Grid of Bank Gateways */}
+      {
+    /* Grid of Bank Gateways */
+  }
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {bankLinkages.map((bank) => (
-          <div
-            key={bank.id}
-            className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4 hover:border-slate-300 transition-all flex flex-col justify-between"
-          >
+        {bankLinkages.map((bank) => <div
+    key={bank.id}
+    className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4 hover:border-slate-300 transition-all flex flex-col justify-between"
+  >
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-2xs"
-                  style={{ backgroundColor: bank.logoBg }}
-                >
+    className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-2xs"
+    style={{ backgroundColor: bank.logoBg }}
+  >
                   {bank.logoText}
                 </div>
 
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                   {bank.status}
                 </span>
               </div>
@@ -97,18 +88,19 @@ export const BankLinkagesView: React.FC<BankLinkagesViewProps> = ({
             </div>
 
             <button
-              onClick={() => handleTestPing(bank)}
-              disabled={isPinging}
-              className="w-full mt-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
+    onClick={() => handleTestPing(bank)}
+    disabled={isPinging}
+    className="w-full mt-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+  >
               <Activity className="w-3.5 h-3.5 text-slate-500" />
               <span>Test SFMS MT799 Handshake</span>
             </button>
-          </div>
-        ))}
+          </div>)}
       </div>
 
-      {/* Structured Financial Messaging Specs Card */}
+      {
+    /* Structured Financial Messaging Specs Card */
+  }
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
         <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-[#0D3B66]" />
@@ -131,6 +123,5 @@ export const BankLinkagesView: React.FC<BankLinkagesViewProps> = ({
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };

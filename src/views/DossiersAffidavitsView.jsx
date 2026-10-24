@@ -1,21 +1,14 @@
-import React, { useState } from 'react';
-import { FileText, Download, Upload, Eye, CheckCircle2, ShieldCheck, Printer, Stamp } from 'lucide-react';
-import { DossierDocument } from '../types';
-
-interface DossiersAffidavitsViewProps {
-  documents: DossierDocument[];
-  onOpenAffidavitModal: () => void;
-}
-
-export const DossiersAffidavitsView: React.FC<DossiersAffidavitsViewProps> = ({
+import { useState } from "react";
+import { FileText, Download, Printer, Stamp } from "lucide-react";
+export const DossiersAffidavitsView = ({
   documents,
   onOpenAffidavitModal
 }) => {
-  const [selectedDoc, setSelectedDoc] = useState<DossierDocument | null>(documents[0] || null);
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
+  const [selectedDoc, setSelectedDoc] = useState(documents[0] || null);
+  return <div className="space-y-6">
+      {
+    /* Header */
+  }
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
@@ -30,16 +23,18 @@ export const DossiersAffidavitsView: React.FC<DossiersAffidavitsViewProps> = ({
         </div>
 
         <button
-          onClick={onOpenAffidavitModal}
-          className="px-3.5 py-2 text-xs font-bold text-white bg-[#0D3B66] hover:bg-[#002546] rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-        >
+    onClick={onOpenAffidavitModal}
+    className="px-3.5 py-2 text-xs font-bold text-white bg-[#0D3B66] hover:bg-[#002546] rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+  >
           <Stamp className="w-3.5 h-3.5 text-amber-400" />
           <span>+ Generate New Affidavit-6</span>
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Document list */}
+        {
+    /* Document list */
+  }
         <div className="space-y-3">
           <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
             Repository Documents ({documents.length})
@@ -47,25 +42,18 @@ export const DossiersAffidavitsView: React.FC<DossiersAffidavitsViewProps> = ({
 
           <div className="space-y-2.5">
             {documents.map((doc) => {
-              const isSelected = selectedDoc?.id === doc.id;
-              return (
-                <div
-                  key={doc.id}
-                  onClick={() => setSelectedDoc(doc)}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                    isSelected
-                      ? 'border-[#0D3B66] bg-blue-50/50 shadow-2xs'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
-                  }`}
-                >
+    const isSelected = selectedDoc?.id === doc.id;
+    return <div
+      key={doc.id}
+      onClick={() => setSelectedDoc(doc)}
+      className={`p-3.5 rounded-xl border cursor-pointer transition-all ${isSelected ? "border-[#0D3B66] bg-blue-50/50 shadow-2xs" : "border-slate-200 bg-white hover:border-slate-300"}`}
+    >
                   <div className="flex items-start justify-between">
                     <span className="font-bold text-xs text-slate-900 leading-snug">{doc.title}</span>
                     <span
-                      className={`text-[9px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                        doc.verified ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800'
-                      }`}
-                    >
-                      {doc.verified ? 'Verified' : 'Under Review'}
+      className={`text-[9px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${doc.verified ? "bg-emerald-100 text-emerald-800" : "bg-sky-100 text-sky-800"}`}
+    >
+                      {doc.verified ? "Verified" : "Under Review"}
                     </span>
                   </div>
 
@@ -74,16 +62,16 @@ export const DossiersAffidavitsView: React.FC<DossiersAffidavitsViewProps> = ({
                     <span>{doc.uploadDate}</span>
                     <span className="font-mono">{doc.fileSize}</span>
                   </div>
-                </div>
-              );
-            })}
+                </div>;
+  })}
           </div>
         </div>
 
-        {/* Selected Document Full View */}
+        {
+    /* Selected Document Full View */
+  }
         <div className="lg:col-span-2 space-y-4">
-          {selectedDoc ? (
-            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-5">
+          {selectedDoc ? <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-5">
               <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                 <div>
                   <h3 className="text-base font-bold text-slate-900">{selectedDoc.title}</h3>
@@ -94,22 +82,24 @@ export const DossiersAffidavitsView: React.FC<DossiersAffidavitsViewProps> = ({
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => window.print()}
-                    className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600"
-                    title="Print"
-                  >
+    onClick={() => window.print()}
+    className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600"
+    title="Print"
+  >
                     <Printer className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => alert(`Downloading: ${selectedDoc.title}`)}
-                    className="px-3 py-1.5 bg-[#0D3B66] hover:bg-[#002546] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
-                  >
+    onClick={() => alert(`Downloading: ${selectedDoc.title}`)}
+    className="px-3 py-1.5 bg-[#0D3B66] hover:bg-[#002546] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
+  >
                     <Download className="w-3.5 h-3.5" /> Download Signed PDF
                   </button>
                 </div>
               </div>
 
-              {/* Simulated PDF Stamp Card */}
+              {
+    /* Simulated PDF Stamp Card */
+  }
               <div className="border-2 border-slate-300 rounded-xl p-8 bg-amber-50/15 font-serif space-y-4">
                 <div className="text-center pb-4 border-b border-slate-300">
                   <span className="text-[11px] font-sans font-bold text-[#0D3B66] tracking-widest block uppercase">
@@ -119,7 +109,7 @@ export const DossiersAffidavitsView: React.FC<DossiersAffidavitsViewProps> = ({
                     CERTIFICATE OF STAMP DUTY & STATUTORY AFFIDAVIT
                   </h4>
                   <p className="font-mono text-xs font-bold text-slate-700 mt-1">
-                    {selectedDoc.stampValue || 'STAMP-DUTY-MH-2025-99214'}
+                    {selectedDoc.stampValue || "STAMP-DUTY-MH-2025-99214"}
                   </p>
                 </div>
 
@@ -144,14 +134,10 @@ export const DossiersAffidavitsView: React.FC<DossiersAffidavitsViewProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">
+            </div> : <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">
               Select a document from the left to view preview
-            </div>
-          )}
+            </div>}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };

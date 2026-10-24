@@ -1,25 +1,21 @@
-import React, { useState } from 'react';
-import { Calculator, Download, CheckCircle2, Info, ArrowRight } from 'lucide-react';
-import { TABLE_1_4_RATES, FORMAT_INDIAN_CURRENCY } from '../data/mockData';
-
-export const CapitalCalculatorView: React.FC = () => {
+import { useState } from "react";
+import { Calculator, Download, Info, ArrowRight } from "lucide-react";
+import { TABLE_1_4_RATES, FORMAT_INDIAN_CURRENCY } from "../data/mockData";
+export const CapitalCalculatorView = () => {
   const [selectedProgram, setSelectedProgram] = useState(TABLE_1_4_RATES[0].program);
-  const [categoryType, setCategoryType] = useState<'unreserved' | 'minority' | 'women' | 'ner'>('unreserved');
-  const [institutionType, setInstitutionType] = useState<'new' | 'expansion'>('new');
+  const [categoryType, setCategoryType] = useState("unreserved");
+  const [institutionType, setInstitutionType] = useState("new");
   const [intakeSeats, setIntakeSeats] = useState(60);
-
   const currentRate = TABLE_1_4_RATES.find((r) => r.program === selectedProgram) || TABLE_1_4_RATES[0];
-
-  let baseRate = categoryType === 'unreserved' ? currentRate.unreserved : currentRate.minorityWomen;
-  if (categoryType === 'ner') baseRate = Math.round(baseRate * 0.75); // 25% statutory concession for NER/J&K
-
-  if (institutionType === 'expansion') {
-    baseRate = Math.round(baseRate * 0.5); // 50% for additional division/intake
+  let baseRate = categoryType === "unreserved" ? currentRate.unreserved : currentRate.minorityWomen;
+  if (categoryType === "ner") baseRate = Math.round(baseRate * 0.75);
+  if (institutionType === "expansion") {
+    baseRate = Math.round(baseRate * 0.5);
   }
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
+  return <div className="space-y-6">
+      {
+    /* Header */
+  }
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
@@ -34,16 +30,18 @@ export const CapitalCalculatorView: React.FC = () => {
         </div>
 
         <button
-          onClick={() => alert('Downloading AICTE Table 1.4 Statutory Schedule (PDF)...')}
-          className="px-3 py-1.5 text-xs text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center gap-1.5"
-        >
+    onClick={() => alert("Downloading AICTE Table 1.4 Statutory Schedule (PDF)...")}
+    className="px-3 py-1.5 text-xs text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center gap-1.5"
+  >
           <Download className="w-3.5 h-3.5 text-slate-500" />
           <span>Table 1.4 Schedule PDF</span>
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Form options */}
+        {
+    /* Left 2 Cols: Form options */
+  }
         <div className="lg:col-span-2 space-y-5">
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
@@ -53,15 +51,13 @@ export const CapitalCalculatorView: React.FC = () => {
             <div className="space-y-2 text-xs">
               <label className="block text-slate-700 font-semibold">Select Discipline & Degree Level</label>
               <select
-                value={selectedProgram}
-                onChange={(e) => setSelectedProgram(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white text-xs font-semibold text-slate-900"
-              >
-                {TABLE_1_4_RATES.map((rate) => (
-                  <option key={rate.program} value={rate.program}>
+    value={selectedProgram}
+    onChange={(e) => setSelectedProgram(e.target.value)}
+    className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white text-xs font-semibold text-slate-900"
+  >
+                {TABLE_1_4_RATES.map((rate) => <option key={rate.program} value={rate.program}>
                     {rate.program}
-                  </option>
-                ))}
+                  </option>)}
               </select>
             </div>
 
@@ -71,85 +67,69 @@ export const CapitalCalculatorView: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div
-                onClick={() => setCategoryType('unreserved')}
-                className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                  categoryType === 'unreserved'
-                    ? 'border-[#0D3B66] bg-blue-50/50 ring-1 ring-[#0D3B66]'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
+    onClick={() => setCategoryType("unreserved")}
+    className={`p-3 rounded-xl border cursor-pointer transition-all ${categoryType === "unreserved" ? "border-[#0D3B66] bg-blue-50/50 ring-1 ring-[#0D3B66]" : "border-slate-200 hover:border-slate-300"}`}
+  >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900">General / Unreserved</span>
                   <input
-                    type="radio"
-                    name="category"
-                    checked={categoryType === 'unreserved'}
-                    onChange={() => setCategoryType('unreserved')}
-                    className="text-[#0D3B66]"
-                  />
+    type="radio"
+    name="category"
+    checked={categoryType === "unreserved"}
+    onChange={() => setCategoryType("unreserved")}
+    className="text-[#0D3B66]"
+  />
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">Standard AICTE regulatory rate</p>
               </div>
 
               <div
-                onClick={() => setCategoryType('minority')}
-                className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                  categoryType === 'minority'
-                    ? 'border-[#0D3B66] bg-blue-50/50 ring-1 ring-[#0D3B66]'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
+    onClick={() => setCategoryType("minority")}
+    className={`p-3 rounded-xl border cursor-pointer transition-all ${categoryType === "minority" ? "border-[#0D3B66] bg-blue-50/50 ring-1 ring-[#0D3B66]" : "border-slate-200 hover:border-slate-300"}`}
+  >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900">Minority / Women / PwD</span>
                   <input
-                    type="radio"
-                    name="category"
-                    checked={categoryType === 'minority'}
-                    onChange={() => setCategoryType('minority')}
-                    className="text-[#0D3B66]"
-                  />
+    type="radio"
+    name="category"
+    checked={categoryType === "minority"}
+    onChange={() => setCategoryType("minority")}
+    className="text-[#0D3B66]"
+  />
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">Concessional Table 1.4 security deposit</p>
               </div>
 
               <div
-                onClick={() => setCategoryType('ner')}
-                className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                  categoryType === 'ner'
-                    ? 'border-[#0D3B66] bg-blue-50/50 ring-1 ring-[#0D3B66]'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
+    onClick={() => setCategoryType("ner")}
+    className={`p-3 rounded-xl border cursor-pointer transition-all ${categoryType === "ner" ? "border-[#0D3B66] bg-blue-50/50 ring-1 ring-[#0D3B66]" : "border-slate-200 hover:border-slate-300"}`}
+  >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900">NER / J&K / Ladakh / Hill States</span>
                   <input
-                    type="radio"
-                    name="category"
-                    checked={categoryType === 'ner'}
-                    onChange={() => setCategoryType('ner')}
-                    className="text-[#0D3B66]"
-                  />
+    type="radio"
+    name="category"
+    checked={categoryType === "ner"}
+    onChange={() => setCategoryType("ner")}
+    className="text-[#0D3B66]"
+  />
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">Special regional 25% waiver</p>
               </div>
 
               <div
-                onClick={() => setCategoryType('women')}
-                className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                  categoryType === 'women'
-                    ? 'border-[#0D3B66] bg-blue-50/50 ring-1 ring-[#0D3B66]'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
+    onClick={() => setCategoryType("women")}
+    className={`p-3 rounded-xl border cursor-pointer transition-all ${categoryType === "women" ? "border-[#0D3B66] bg-blue-50/50 ring-1 ring-[#0D3B66]" : "border-slate-200 hover:border-slate-300"}`}
+  >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900">Exclusive Women's College</span>
                   <input
-                    type="radio"
-                    name="category"
-                    checked={categoryType === 'women'}
-                    onChange={() => setCategoryType('women')}
-                    className="text-[#0D3B66]"
-                  />
+    type="radio"
+    name="category"
+    checked={categoryType === "women"}
+    onChange={() => setCategoryType("women")}
+    className="text-[#0D3B66]"
+  />
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">Concessional deposit tranche</p>
               </div>
@@ -162,30 +142,32 @@ export const CapitalCalculatorView: React.FC = () => {
             <div className="flex items-center gap-3 text-xs">
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 flex-1 cursor-pointer">
                 <input
-                  type="radio"
-                  name="approvalType"
-                  checked={institutionType === 'new'}
-                  onChange={() => setInstitutionType('new')}
-                  className="text-[#0D3B66]"
-                />
+    type="radio"
+    name="approvalType"
+    checked={institutionType === "new"}
+    onChange={() => setInstitutionType("new")}
+    className="text-[#0D3B66]"
+  />
                 <span className="font-medium text-slate-800">Establishment of New Institution (Full Mandate)</span>
               </label>
 
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 flex-1 cursor-pointer">
                 <input
-                  type="radio"
-                  name="approvalType"
-                  checked={institutionType === 'expansion'}
-                  onChange={() => setInstitutionType('expansion')}
-                  className="text-[#0D3B66]"
-                />
+    type="radio"
+    name="approvalType"
+    checked={institutionType === "expansion"}
+    onChange={() => setInstitutionType("expansion")}
+    className="text-[#0D3B66]"
+  />
                 <span className="font-medium text-slate-800">Extension of Approval (EoA) / Additional Intake</span>
               </label>
             </div>
           </div>
         </div>
 
-        {/* Right Col: Calculation Result Card */}
+        {
+    /* Right Col: Calculation Result Card */
+  }
         <div className="space-y-4">
           <div className="bg-[#002546] text-white rounded-xl p-5 shadow-md space-y-4">
             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
@@ -219,9 +201,9 @@ export const CapitalCalculatorView: React.FC = () => {
             </div>
 
             <button
-              onClick={() => alert(`Initiating registration for deposit of ${FORMAT_INDIAN_CURRENCY(baseRate)}`)}
-              className="w-full py-2.5 px-3 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-            >
+    onClick={() => alert(`Initiating registration for deposit of ${FORMAT_INDIAN_CURRENCY(baseRate)}`)}
+    className="w-full py-2.5 px-3 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+  >
               <span>Create Joint FDR Draft</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -238,6 +220,5 @@ export const CapitalCalculatorView: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };

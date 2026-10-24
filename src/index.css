@@ -1,30 +1,93 @@
 @import "tailwindcss";
 
+:root {
+  --primary-navy: #0D3B66;
+  --primary-navy-dark: #002546;
+  --national-saffron: #E65100;
+  --saffron-light: #FFF7ED;
+  --surface-canvas: #F8FAFC;
+  --card-surface: #FFFFFF;
+  --card-border: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-muted: #64748B;
+  --status-verified-text: #059669;
+  --status-verified-bg: #ECFDF5;
+  --status-expiring-text: #D97706;
+  --status-expiring-bg: #FFFBEB;
+  --status-discrepancy-text: #DC2626;
+  --status-discrepancy-bg: #FEF2F2;
+}
+
 @layer base {
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: #1a1c1f;
-    background-color: #f8fafc;
+    font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-primary);
+    background-color: var(--surface-canvas);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
   }
 }
 
-.tabular-nums {
+/* Tabular numbers for financial and ID alignment */
+.tabular-nums, .font-mono, td, .metric-value {
+  font-feature-settings: 'tnum';
   font-variant-numeric: tabular-nums;
 }
 
-/* Custom scrollbar for high density data table and ledger */
+/* GovTech Clean Table Row Height 52px */
+.table-row-52 {
+  min-height: 52px;
+  height: 52px;
+}
+
+/* Crisp 1px solid dividers eliminating fuzzy shadows */
+.card-clean {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+}
+
+/* Two-tone Source Tags */
+.badge-institution {
+  background-color: #F8FAFC;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+}
+
+.badge-bank-verified {
+  background-color: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.badge-discrepancy {
+  background-color: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
+.badge-expiring {
+  background-color: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #CBD5E1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #94A3B8;
 }
-
