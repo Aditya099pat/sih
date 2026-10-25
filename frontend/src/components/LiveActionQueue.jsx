@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   AlertTriangle,
   Clock,
@@ -14,9 +14,10 @@ import {
   Landmark,
   ChevronRight,
   Radio,
-  FileSignature
+  FileSignature,
+  ChevronLeft
 } from "lucide-react";
-import { FORMAT_INDIAN_CURRENCY } from "@data/mockData";
+import { FORMAT_INDIAN_CURRENCY, FORMAT_COMPACT_CURRENCY } from "@data/mockData";
 
 export const LiveActionQueue = ({
   instruments = [],
@@ -29,319 +30,318 @@ export const LiveActionQueue = ({
 }) => {
   const [filterPriority, setFilterPriority] = useState("all");
   const [queueSearch, setQueueSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  // Curated Action Queue items specifically informing officials what to work on next
-  const actionItems = [
-    {
-      id: "action-1",
-      instrumentId: "fdr-1",
-      ref: "FDR-SBIN-2018-09",
-      institutionName: "Bharati Vidya Sansthan",
-      instituteCode: "1-1029384",
-      amount: 3500000,
-      maturityDate: "15 Dec 2026",
-      remainingDays: 42,
-      priority: "urgent",
-      priorityLabel: "T-42 MATURITY ALERT",
-      priorityColor: "bg-amber-100 text-amber-900 border-amber-300",
-      verificationStatus: "Bank API Verified",
-      verificationType: "verified",
-      assignedOfficer: "Sh. V. K. Nambiar (ADG Scrutiny)",
-      nextAction: "Prepare Affidavit-6 Renewal",
-      actionIcon: <FileSignature className="w-3.5 h-3.5" />,
-      actionButtonClass: "bg-amber-600 hover:bg-amber-700 text-white",
-      onExecute: () => onOpenAffidavit && onOpenAffidavit(instruments[0])
-    },
-    {
-      id: "action-2",
-      instrumentId: "fdr-4",
-      ref: "FDR-CNRB-2022-07",
-      institutionName: "Somaiya Institute of Management",
-      instituteCode: "1-2049182",
-      amount: 1500000,
-      maturityDate: "10 Jan 2027",
-      remainingDays: 68,
-      priority: "discrepancy",
-      priorityLabel: "OCR TEXT MISMATCH",
-      priorityColor: "bg-rose-100 text-rose-900 border-rose-300",
-      verificationStatus: "Discrepancy Flagged",
-      verificationType: "discrepancy",
-      assignedOfficer: "Dr. Rameshwar V. Rao (Regional Director)",
-      nextAction: "Open Dual-Track Scrutiny",
-      actionIcon: <Eye className="w-3.5 h-3.5" />,
-      actionButtonClass: "bg-rose-600 hover:bg-rose-700 text-white",
-      onExecute: () => onOpenScrutiny ? onOpenScrutiny("fdr-4") : onSelectTab("scrutiny")
-    },
-    {
-      id: "action-3",
-      instrumentId: "fdr-3",
-      ref: "FDR-BOB-2023-11",
-      institutionName: "K. J. Somaiya College of Engineering",
-      instituteCode: "1-4491028",
-      amount: 2500000,
-      maturityDate: "05 Mar 2027",
-      remainingDays: 122,
-      priority: "pending",
-      priorityLabel: "CBS PENDING",
-      priorityColor: "bg-sky-100 text-sky-900 border-sky-300",
-      verificationStatus: "Pending Bank Confirmation",
-      verificationType: "pending",
-      assignedOfficer: "Bank Auditor (BOB Desk)",
-      nextAction: "Trigger SFMS MT799 Ping",
-      actionIcon: <Radio className="w-3.5 h-3.5" />,
-      actionButtonClass: "bg-[#0B2545] hover:bg-[#133E87] text-white",
-      onExecute: () => onTriggerSfmsPing ? onTriggerSfmsPing() : onSelectTab("sfms")
-    },
-    {
-      id: "action-4",
-      instrumentId: "fdr-2",
-      ref: "FDR-PNB-2018-03",
-      institutionName: "D. Y. Patil Technical Campus",
-      instituteCode: "1-3829104",
-      amount: 5000000,
-      maturityDate: "20 Nov 2026",
-      remainingDays: 17,
-      priority: "release",
-      priorityLabel: "PHASE-5 ELIGIBLE",
-      priorityColor: "bg-emerald-100 text-emerald-900 border-emerald-300",
-      verificationStatus: "All Bureau Gates Passed",
-      verificationType: "verified",
-      assignedOfficer: "Dr. Rameshwar V. Rao (WRO RO)",
-      nextAction: "Authorize Phase-5 Release",
-      actionIcon: <RotateCcw className="w-3.5 h-3.5" />,
-      actionButtonClass: "bg-[#059669] hover:bg-emerald-700 text-white",
-      onExecute: () => onOpenPhaseRelease && onOpenPhaseRelease()
-    },
-    {
-      id: "action-5",
-      instrumentId: "fdr-5",
-      ref: "FDR-SBI-2020-04",
-      institutionName: "Veermata Jijabai Technological Institute",
-      instituteCode: "1-9920194",
-      amount: 3500000,
-      maturityDate: "14 Aug 2028",
-      remainingDays: 650,
-      priority: "compliant",
-      priorityLabel: "COMPLIANT IN-FORCE",
-      priorityColor: "bg-slate-100 text-slate-800 border-slate-300",
-      verificationStatus: "Active Lien Locked",
-      verificationType: "verified",
-      assignedOfficer: "Central Treasury Desk",
-      nextAction: "View Certified Transcript",
-      actionIcon: <CheckCircle2 className="w-3.5 h-3.5" />,
-      actionButtonClass: "bg-slate-700 hover:bg-slate-800 text-white",
-      onExecute: () => onViewInstrument && onViewInstrument(instruments[4] || instruments[0])
-    }
-  ];
+  // Dynamically derive prioritized action cases from all instruments
+  const actionItems = useMemo(() => {
+    // Collect all candidates needing attention
+    const candidates = instruments.filter(
+      (inst) =>
+        inst.hasDiscrepancy ||
+        inst.remainingDays <= 60 ||
+        !inst.bankConfirmed ||
+        inst.phaseReleaseEligible
+    );
 
-  // Filtering
-  const filteredQueue = actionItems.filter((item) => {
-    if (filterPriority === "urgent" && item.priority !== "urgent") return false;
-    if (filterPriority === "discrepancy" && item.priority !== "discrepancy") return false;
-    if (filterPriority === "pending" && item.priority !== "pending") return false;
-    if (filterPriority === "release" && item.priority !== "release") return false;
+    // Sort by urgency:
+    // 1. Critical maturity <= 15 days
+    // 2. Discrepancy flagged
+    // 3. Maturing 16 - 60 days
+    // 4. Pending bank confirmation
+    // 5. Release ready
+    candidates.sort((a, b) => {
+      const getScore = (item) => {
+        if (item.remainingDays <= 15) return 1;
+        if (item.hasDiscrepancy) return 2;
+        if (item.remainingDays <= 45) return 3;
+        if (item.phaseReleaseEligible) return 4;
+        if (!item.bankConfirmed) return 5;
+        return 6;
+      };
+      return getScore(a) - getScore(b);
+    });
 
-    if (queueSearch.trim()) {
-      const q = queueSearch.toLowerCase();
-      const match =
-        item.ref.toLowerCase().includes(q) ||
-        item.institutionName.toLowerCase().includes(q) ||
-        item.instituteCode.toLowerCase().includes(q) ||
-        item.assignedOfficer.toLowerCase().includes(q) ||
-        item.nextAction.toLowerCase().includes(q);
-      if (!match) return false;
-    }
-    return true;
-  });
+    return candidates.map((inst, idx) => {
+      let priority = "normal";
+      let priorityLabel = "REVIEW REQUIRED";
+      let priorityColor = "bg-blue-100 text-[#0B2545] border-blue-200";
+      let nextAction = "Inspect Compliance File";
+      let actionIcon = <Eye className="w-3.5 h-3.5" />;
+      let actionButtonClass = "bg-[#0B2545] hover:bg-[#133E87] text-white";
+      let onExecute = () => onViewInstrument && onViewInstrument(inst);
+
+      if (inst.hasDiscrepancy) {
+        priority = "discrepancy";
+        priorityLabel = "OCR DISCREPANCY FLAGGED";
+        priorityColor = "bg-rose-100 text-rose-900 border-rose-300";
+        nextAction = "Open Dual-Track Scrutiny";
+        actionIcon = <Eye className="w-3.5 h-3.5" />;
+        actionButtonClass = "bg-rose-600 hover:bg-rose-700 text-white";
+        onExecute = () => onOpenScrutiny ? onOpenScrutiny(inst.id) : (onSelectTab && onSelectTab("scrutiny"));
+      } else if (inst.remainingDays <= 45) {
+        priority = "urgent";
+        priorityLabel = `T-${inst.remainingDays} MATURITY ALERT`;
+        priorityColor = inst.remainingDays <= 15 ? "bg-red-100 text-red-900 border-red-400 font-bold" : "bg-amber-100 text-amber-900 border-amber-300";
+        nextAction = "Prepare Affidavit-6 Renewal";
+        actionIcon = <FileSignature className="w-3.5 h-3.5" />;
+        actionButtonClass = "bg-amber-600 hover:bg-amber-700 text-white";
+        onExecute = () => onOpenAffidavit ? onOpenAffidavit(inst) : (onSelectTab && onSelectTab("affidavits"));
+      } else if (inst.phaseReleaseEligible || inst.remainingDays <= 60) {
+        priority = "release";
+        priorityLabel = "PHASE-5 RELEASE READY";
+        priorityColor = "bg-emerald-100 text-emerald-900 border-emerald-300";
+        nextAction = "Initiate Phase-5 Discharge";
+        actionIcon = <RotateCcw className="w-3.5 h-3.5" />;
+        actionButtonClass = "bg-emerald-600 hover:bg-emerald-700 text-white";
+        onExecute = () => onOpenPhaseRelease ? onOpenPhaseRelease(inst) : (onSelectTab && onSelectTab("rpgf"));
+      } else if (!inst.bankConfirmed) {
+        priority = "pending";
+        priorityLabel = "CBS PENDING MATCH";
+        priorityColor = "bg-sky-100 text-sky-900 border-sky-300";
+        nextAction = "Trigger SFMS MT799 Ping";
+        actionIcon = <Radio className="w-3.5 h-3.5" />;
+        actionButtonClass = "bg-[#0B2545] hover:bg-[#133E87] text-white";
+        onExecute = () => onTriggerSfmsPing ? onTriggerSfmsPing() : (onSelectTab && onSelectTab("sfms"));
+      }
+
+      const officers = [
+        "Sh. V. K. Nambiar (ADG Scrutiny)",
+        "Dr. Rameshwar V. Rao (Regional Director)",
+        "Bank Auditor (Core Banking Desk)",
+        "Senior Scrutiny Officer (Approval Bureau)",
+        "Central Vigilance Liaison Officer"
+      ];
+
+      return {
+        id: `action-${inst.id}`,
+        instrumentId: inst.id,
+        ref: inst.ref,
+        institutionName: inst.instituteName,
+        instituteCode: inst.instituteCode,
+        amount: inst.principalAmount,
+        maturityDate: inst.maturityDate,
+        remainingDays: inst.remainingDays,
+        priority,
+        priorityLabel,
+        priorityColor,
+        verificationStatus: inst.bankConfirmed ? "Bank API Verified" : inst.hasDiscrepancy ? "Discrepancy Flagged" : "Pending Bank Match",
+        verificationType: inst.bankConfirmed ? "verified" : inst.hasDiscrepancy ? "discrepancy" : "pending",
+        assignedOfficer: officers[idx % officers.length],
+        nextAction,
+        actionIcon,
+        actionButtonClass,
+        onExecute,
+        inst
+      };
+    });
+  }, [instruments, onViewInstrument, onOpenScrutiny, onOpenPhaseRelease, onOpenAffidavit, onTriggerSfmsPing, onSelectTab]);
+
+  // Filter queue items
+  const filteredActionItems = useMemo(() => {
+    return actionItems.filter((item) => {
+      if (filterPriority === "urgent" && item.priority !== "urgent") return false;
+      if (filterPriority === "discrepancy" && item.priority !== "discrepancy") return false;
+      if (filterPriority === "pending" && item.priority !== "pending") return false;
+      if (filterPriority === "release" && item.priority !== "release") return false;
+
+      if (queueSearch.trim()) {
+        const q = queueSearch.toLowerCase().trim();
+        return (
+          item.ref.toLowerCase().includes(q) ||
+          item.institutionName.toLowerCase().includes(q) ||
+          item.instituteCode.toLowerCase().includes(q) ||
+          item.assignedOfficer.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [actionItems, filterPriority, queueSearch]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredActionItems.length / pageSize));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const paginatedItems = filteredActionItems.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  const urgentCount = actionItems.filter((i) => i.priority === "urgent").length;
+  const discrepancyCount = actionItems.filter((i) => i.priority === "discrepancy").length;
+  const pendingCount = actionItems.filter((i) => i.priority === "pending").length;
+  const releaseCount = actionItems.filter((i) => i.priority === "release").length;
 
   return (
-    <div className="card-clean rounded-lg bg-white border border-[#E2E8F0] overflow-hidden shadow-none">
-      {/* Header Bar */}
-      <div className="p-4 border-b border-[#E2E8F0] flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-              Live Priority Action Queue
-            </h2>
-            <span className="bg-rose-50 text-rose-800 border border-rose-200 text-[10px] font-bold px-2 py-0.5 rounded-full font-mono">
-              {filteredQueue.length} TASKS REQUIRING ACTION
-            </span>
+    <div className="card-clean rounded-lg bg-white border border-[#E2E8F0] overflow-hidden shadow-2xs">
+      {/* Header */}
+      <div className="p-3.5 border-b border-[#E2E8F0] flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-md bg-amber-500/10 text-[#D97706] flex items-center justify-center font-bold">
+            <AlertTriangle className="w-4 h-4" />
           </div>
-          <p className="text-xs text-slate-500">
-            Immediate statutory tasks sorted by regulatory deadline, discrepancy risk, and officer jurisdiction.
-          </p>
+          <div>
+            <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <span>National Live Priority Action Queue</span>
+              <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] px-2 py-0.2 rounded-full font-bold">
+                {actionItems.length} Cases Requiring Scrutiny
+              </span>
+            </h2>
+            <p className="text-[11px] text-slate-500">
+              Prescriptive regulatory dispatch engine guiding bureau officials on immediate statutory milestones.
+            </p>
+          </div>
         </div>
 
-        {/* Filter Pills & Search */}
+        {/* Search & Priority Filter Pills */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Quick Search */}
-          <div className="relative min-w-[200px]">
+          {/* Queue Search */}
+          <div className="relative min-w-[190px]">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search queue tasks..."
+              placeholder="Search action cases..."
               value={queueSearch}
-              onChange={(e) => setQueueSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#F8FAFC] border border-[#E2E8F0] rounded-md focus:outline-none focus:border-[#0B2545] text-slate-900"
+              onChange={(e) => {
+                setQueueSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-8 pr-3 py-1 text-xs bg-[#F8FAFC] border border-[#E2E8F0] rounded-md focus:outline-none focus:bg-white text-[#0F172A]"
             />
           </div>
 
-          {/* Quick Category Pills */}
+          {/* Filter Pills */}
           <div className="inline-flex rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-0.5 text-xs">
             <button
-              onClick={() => setFilterPriority("all")}
-              className={`px-2.5 py-1 font-semibold rounded transition-colors cursor-pointer ${
-                filterPriority === "all" ? "bg-white text-[#0B2545] shadow-2xs font-bold" : "text-slate-600 hover:text-slate-900"
+              onClick={() => {
+                setFilterPriority("all");
+                setCurrentPage(1);
+              }}
+              className={`px-2 py-0.5 text-[11px] font-semibold rounded cursor-pointer ${
+                filterPriority === "all" ? "bg-white text-[#0B2545] font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
               All ({actionItems.length})
             </button>
             <button
-              onClick={() => setFilterPriority("urgent")}
-              className={`px-2.5 py-1 font-semibold rounded transition-colors cursor-pointer flex items-center gap-1 ${
-                filterPriority === "urgent" ? "bg-white text-amber-900 shadow-2xs font-bold" : "text-slate-600 hover:text-slate-900"
+              onClick={() => {
+                setFilterPriority("urgent");
+                setCurrentPage(1);
+              }}
+              className={`px-2 py-0.5 text-[11px] font-semibold rounded cursor-pointer flex items-center gap-1 ${
+                filterPriority === "urgent" ? "bg-white text-amber-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Clock className="w-3 h-3 text-amber-600" />
-              Deadlines (1)
+              <span>Maturing</span>
+              <span className="text-[9px] px-1 rounded-full bg-amber-100">{urgentCount}</span>
             </button>
             <button
-              onClick={() => setFilterPriority("discrepancy")}
-              className={`px-2.5 py-1 font-semibold rounded transition-colors cursor-pointer flex items-center gap-1 ${
-                filterPriority === "discrepancy" ? "bg-white text-rose-900 shadow-2xs font-bold" : "text-slate-600 hover:text-slate-900"
+              onClick={() => {
+                setFilterPriority("discrepancy");
+                setCurrentPage(1);
+              }}
+              className={`px-2 py-0.5 text-[11px] font-semibold rounded cursor-pointer flex items-center gap-1 ${
+                filterPriority === "discrepancy" ? "bg-white text-rose-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <AlertTriangle className="w-3 h-3 text-rose-600" />
-              Discrepancies (1)
+              <span>Discrepancy</span>
+              <span className="text-[9px] px-1 rounded-full bg-rose-100">{discrepancyCount}</span>
             </button>
             <button
-              onClick={() => setFilterPriority("release")}
-              className={`px-2.5 py-1 font-semibold rounded transition-colors cursor-pointer flex items-center gap-1 ${
-                filterPriority === "release" ? "bg-white text-emerald-900 shadow-2xs font-bold" : "text-slate-600 hover:text-slate-900"
+              onClick={() => {
+                setFilterPriority("release");
+                setCurrentPage(1);
+              }}
+              className={`px-2 py-0.5 text-[11px] font-semibold rounded cursor-pointer flex items-center gap-1 ${
+                filterPriority === "release" ? "bg-white text-emerald-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-              Release Ready (1)
+              <span>Release</span>
+              <span className="text-[9px] px-1 rounded-full bg-emerald-100">{releaseCount}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* High-Density Action Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px]">
-              <th className="py-2.5 px-3">Priority / State</th>
-              <th className="py-2.5 px-3">Instrument &amp; Institution</th>
-              <th className="py-2.5 px-3 text-right">Pledged Capital</th>
-              <th className="py-2.5 px-3">Statutory Deadline</th>
-              <th className="py-2.5 px-3">Verification Telemetry</th>
-              <th className="py-2.5 px-3">Jurisdiction Officer</th>
-              <th className="py-2.5 px-3 text-right">Recommended Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {filteredQueue.map((item) => (
-              <tr
-                key={item.id}
-                className="hover:bg-slate-50/80 transition-colors"
-              >
-                {/* Priority Badge */}
-                <td className="py-3 px-3">
+      {/* Action Queue List */}
+      <div className="divide-y divide-[#E2E8F0]">
+        {paginatedItems.length === 0 ? (
+          <div className="py-8 text-center text-slate-500 text-xs">
+            No pending action items matching the current filter.
+          </div>
+        ) : (
+          paginatedItems.map((item) => (
+            <div
+              key={item.id}
+              className="p-3.5 hover:bg-[#F8FAFC] transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3"
+            >
+              {/* Left Column: Priority Tag, Institution & Instrument */}
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border font-mono ${item.priorityColor}`}
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${item.priorityColor}`}
                   >
                     {item.priorityLabel}
                   </span>
-                </td>
-
-                {/* Instrument & Institution */}
-                <td className="py-3 px-3">
-                  <div className="font-mono font-bold text-[#0B2545]">
-                    {item.ref}
-                  </div>
-                  <div className="text-slate-700 font-medium truncate max-w-[200px]">
+                  <span className="font-mono font-bold text-xs text-[#0B2545]">{item.ref}</span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-xs font-semibold text-slate-800 truncate max-w-[240px]">
                     {item.institutionName}
-                  </div>
-                  <div className="text-[10px] font-mono text-slate-400">
-                    PID: {item.instituteCode}
-                  </div>
-                </td>
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-500">({item.instituteCode})</span>
+                </div>
 
-                {/* Pledged Capital */}
-                <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
-                  {FORMAT_INDIAN_CURRENCY(item.amount)}
-                </td>
+                <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
+                  <span>
+                    Pledged Capital:{" "}
+                    <strong className="text-slate-800 font-mono">
+                      {FORMAT_INDIAN_CURRENCY(item.amount)}
+                    </strong>
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span>Matures: {item.maturityDate}</span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-slate-600 font-medium">Assigned Officer: {item.assignedOfficer}</span>
+                </div>
+              </div>
 
-                {/* Target Maturity */}
-                <td className="py-3 px-3">
-                  <div className="font-mono text-slate-800">
-                    {item.maturityDate}
-                  </div>
-                  <div
-                    className={`text-[11px] font-semibold ${
-                      item.remainingDays <= 45 ? "text-amber-800" : "text-slate-500"
-                    }`}
-                  >
-                    {item.remainingDays <= 45 ? `⚠️ ${item.remainingDays}d lead remaining` : `${item.remainingDays} days`}
-                  </div>
-                </td>
-
-                {/* Verification Status */}
-                <td className="py-3 px-3">
-                  {item.verificationType === "verified" ? (
-                    <span className="badge-bank-verified text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
-                      {item.verificationStatus}
-                    </span>
-                  ) : item.verificationType === "discrepancy" ? (
-                    <span className="badge-discrepancy text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]" />
-                      {item.verificationStatus}
-                    </span>
-                  ) : (
-                    <span className="bg-sky-50 text-sky-800 border border-sky-200 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                      <Clock className="w-2.5 h-2.5 text-sky-600" />
-                      {item.verificationStatus}
-                    </span>
-                  )}
-                </td>
-
-                {/* Assigned Officer */}
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1.5 text-slate-800 font-medium">
-                    <UserCheck className="w-3.5 h-3.5 text-slate-500" />
-                    <span>{item.assignedOfficer}</span>
-                  </div>
-                </td>
-
-                {/* Recommended Next Action (Direct 1-Click Trigger) */}
-                <td className="py-3 px-3 text-right">
-                  <button
-                    onClick={item.onExecute}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all flex items-center gap-1.5 ml-auto cursor-pointer shadow-xs ${item.actionButtonClass}`}
-                  >
-                    {item.actionIcon}
-                    <span>{item.nextAction}</span>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              {/* Right Column: Next Action Execution */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={item.onExecute}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs ${item.actionButtonClass}`}
+                >
+                  {item.actionIcon}
+                  <span>{item.nextAction}</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
-      {/* Queue Footer */}
-      <div className="p-3 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between text-xs text-slate-500">
+      {/* Queue Footer & Pagination */}
+      <div className="p-2.5 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-between text-xs text-slate-500">
         <div>
-          Showing <strong>{filteredQueue.length}</strong> prioritized workflow items across WRO jurisdiction
+          Showing {(safePage - 1) * pageSize + 1} to{" "}
+          {Math.min(safePage * pageSize, filteredActionItems.length)} of{" "}
+          <strong>{filteredActionItems.length}</strong> prioritized queue items
         </div>
-        <div className="flex items-center gap-1 text-[11px] text-[#0B2545] font-semibold">
-          <span>Priority Algorithm: Real-Time Regulatory Gate Synchronization</span>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={safePage === 1}
+            className="p-1 rounded border border-[#E2E8F0] bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <span className="font-mono font-semibold">
+            {safePage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={safePage === totalPages}
+            className="p-1 rounded border border-[#E2E8F0] bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </div>

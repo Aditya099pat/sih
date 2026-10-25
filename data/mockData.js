@@ -1,222 +1,28 @@
-export const INITIAL_INSTRUMENTS = [
-  {
-    id: "fdr-1",
-    ref: "FDR-SBIN-2018-09",
-    instituteCode: "1-1029384",
-    instituteName: "Bharati Vidya Sansthan",
-    discipline: "B.Tech Engineering & Tech (Est. 2018)",
-    disciplineCategory: "engineering",
-    disciplineCode: "UG-ENGG-01",
-    dotColor: "#D97706",
-    type: "Joint Fixed Deposit",
-    custodyMode: "Physical Custody @ AICTE HQ",
-    bankName: "State Bank of India",
-    branchName: "Nariman Point Br.",
-    ifsc: "SBIN0001423",
-    principalAmount: 35e5,
-    accruedInterest: 648200,
-    interestRate: 7.25,
-    issueDate: "15 Dec 2018",
-    maturityDate: "15 Dec 2026",
-    remainingDays: 42,
-    termYears: 8,
-    verificationSource: "Trust Declared",
-    bankApiStatus: "SBI CBS \u2713",
-    bankConfirmed: true,
-    bankConfirmedBy: "State Bank of India CBS",
-    statutoryStatus: "Maturing in 42 Days",
-    statusType: "warning",
-    jointLienWith: "Member Secretary, AICTE New Delhi",
-    fdrReceiptNo: "SBI-FD-77291044",
-    sfmsReference: "SFMS/2018/L799/0091823",
-    eStampNumber: "IN-MH889210947721A",
-    intakeCapacity: 300,
-    approvedYear: "2018-19"
-  },
-  {
-    id: "fdr-2",
-    ref: "FDR-PNB-2020-04",
-    instituteCode: "1-1029384",
-    instituteName: "Bharati Vidya Sansthan",
-    discipline: "B.Tech Engineering Additional Intake",
-    disciplineCategory: "engineering",
-    disciplineCode: "UG-ENGG-ADDL",
-    dotColor: "#059669",
-    type: "Joint Fixed Deposit",
-    custodyMode: "SFMS e-Lien Registered",
-    bankName: "Punjab National Bank",
-    branchName: "Fort Branch",
-    ifsc: "PUNB0012900",
-    principalAmount: 5e6,
-    accruedInterest: 892450,
-    interestRate: 7.1,
-    issueDate: "01 Jul 2020",
-    maturityDate: "30 Jun 2028",
-    remainingDays: 614,
-    termYears: 8,
-    verificationSource: "Trust Declared",
-    bankApiStatus: "PNB Direct \u2713",
-    bankConfirmed: true,
-    bankConfirmedBy: "Punjab National Bank Direct",
-    statutoryStatus: "Active (>180 Days)",
-    statusType: "success",
-    jointLienWith: "Regional Officer, AICTE WRO Mumbai & Member Secretary",
-    fdrReceiptNo: "PNB-E-FDR-9023411",
-    sfmsReference: "SFMS/2020/L799/992140",
-    eStampNumber: "IN-MH99218471922B",
-    intakeCapacity: 120,
-    approvedYear: "2020-21"
-  },
-  {
-    id: "fdr-3",
-    ref: "FDR-SBIN-2023-11",
-    instituteCode: "1-1029384",
-    instituteName: "Bharati Vidya Sansthan",
-    discipline: "Post Graduate MBA Discipline",
-    disciplineCategory: "management",
-    disciplineCode: "PG-MGMT-MBA",
-    dotColor: "#0D3B66",
-    type: "Direct RTGS Custody",
-    custodyMode: "Central Lien Sub-account",
-    bankName: "State Bank of India",
-    branchName: "Bandra Kurla Br.",
-    ifsc: "SBIN0004521",
-    principalAmount: 2e6,
-    accruedInterest: 302240,
-    interestRate: 7.15,
-    issueDate: "11 Nov 2023",
-    maturityDate: "10 Nov 2031",
-    remainingDays: 1842,
-    termYears: 8,
-    verificationSource: "Trust Declared",
-    bankApiStatus: "Pending Verification",
-    bankConfirmed: false,
-    statutoryStatus: "Under Scrutiny",
-    statusType: "info",
-    jointLienWith: "Member Secretary, AICTE New Delhi",
-    fdrReceiptNo: "SBI-FD-88392019",
-    sfmsReference: "SFMS/2023/RTGS/441029",
-    eStampNumber: "IN-MH44910284712C",
-    intakeCapacity: 60,
-    approvedYear: "2023-24"
-  },
-  {
-    id: "fdr-4",
-    ref: "FDR-CNRB-2022-07",
-    instituteCode: "1-1029384",
-    instituteName: "Bharati Vidya Sansthan",
-    discipline: "M.Tech Artificial Intelligence & Robotics",
-    disciplineCategory: "engineering",
-    disciplineCode: "PG-ENGG-AIR",
-    dotColor: "#DC2626",
-    type: "Joint Fixed Deposit",
-    custodyMode: "Branch Custody Scanned Copy",
-    bankName: "Canara Bank",
-    branchName: "Shivaji Nagar Br.",
-    ifsc: "CNRB0000412",
-    principalAmount: 15e5,
-    accruedInterest: 184e3,
-    interestRate: 7,
-    issueDate: "14 Aug 2022",
-    maturityDate: "13 Aug 2030",
-    remainingDays: 1388,
-    termYears: 8,
-    verificationSource: "Trust Declared",
-    bankApiStatus: "Discrepancy Alert \u2715",
-    bankConfirmed: false,
-    hasDiscrepancy: true,
-    discrepancyNote: "Lien Clause text in uploaded scan does not mention AICTE Member Secretary explicitly.",
-    statutoryStatus: "Discrepancy Flagged",
-    statusType: "error",
-    jointLienWith: "Pending AICTE Endorsement",
-    fdrReceiptNo: "CNRB-FD-4491024",
-    sfmsReference: "SFMS/2022/CAN/882190",
-    eStampNumber: "IN-MH77192840192D",
-    intakeCapacity: 30,
-    approvedYear: "2022-23"
-  },
-  {
-    id: "fdr-5",
-    ref: "FDR-BOB-2019-10",
-    instituteCode: "1-1029384",
-    instituteName: "Bharati Vidya Sansthan",
-    discipline: "Diploma in Computer Engineering",
-    disciplineCategory: "other",
-    disciplineCode: "DIP-POLY-CE",
-    dotColor: "#059669",
-    type: "Joint Fixed Deposit",
-    custodyMode: "SFMS e-Lien Registered",
-    bankName: "Bank of Baroda",
-    branchName: "Andheri East Br.",
-    ifsc: "BARB0ANDHER",
-    principalAmount: 25e5,
-    accruedInterest: 512e3,
-    interestRate: 7.2,
-    issueDate: "20 Oct 2019",
-    maturityDate: "19 Oct 2027",
-    remainingDays: 359,
-    termYears: 8,
-    verificationSource: "Trust Declared",
-    bankApiStatus: "SBI CBS \u2713",
-    bankConfirmed: true,
-    bankConfirmedBy: "Bank of Baroda CBS Gateway",
-    statutoryStatus: "Active (>180 Days)",
-    statusType: "success",
-    jointLienWith: "Member Secretary, AICTE New Delhi",
-    fdrReceiptNo: "BOB-FD-99482103",
-    sfmsReference: "SFMS/2019/L799/331092",
-    eStampNumber: "IN-MH55219034812E",
-    intakeCapacity: 60,
-    approvedYear: "2019-20"
-  }
-];
-export const INITIAL_AUDIT_LOGS = [
-  {
-    id: "log-1",
-    title: "Phase-5 Rollover Window Initiated",
-    timestamp: "Today, 10:14 AM",
-    date: "2026-10-24",
-    type: "alert",
-    description: "Automated 45-day statutory milestone reminder triggered for FDR-SBIN-2018-09. Lien letter dispatched to State Bank of India, Nariman Point.",
-    txnId: "#AICTE-WRO-2025-9982",
-    actionDue: "15 Nov 2026",
-    hash: "0x8f2a...771c99",
-    actor: "AICTE Automated Rule Engine"
-  },
-  {
-    id: "log-2",
-    title: "SFMS Core Banking API Verified",
-    timestamp: "22 Oct 2025",
-    date: "2025-10-22",
-    type: "success",
-    description: "Periodic balance & non-encashment lien status successfully verified via PNB Core Banking SFMS Gateway for Instrument FDR-PNB-2020-04.",
-    txnId: "#SFMS-API-PNB-8831",
-    hash: "0x33e1...b049d2",
-    actor: "PNB Gateway v2.4.1"
-  },
-  {
-    id: "log-3",
-    title: "Statutory Affidavit-6 Uploaded",
-    timestamp: "14 Sep 2025",
-    date: "2025-09-14",
-    type: "document",
-    description: "Dr. Rajesh K. Sharma (Registrar) digitally signed and uploaded \u20B9100 e-Stamp Affidavit affirming no prior lien or legal encumbrance.",
-    txnId: "#E-STAMP-MH-4402",
-    hash: "0xaa94...55ef10",
-    actor: "Dr. Rajesh K. Sharma (Registrar)"
-  },
-  {
-    id: "log-4",
-    title: "Joint Lien Member Secretary Endorsement",
-    timestamp: "11 Nov 2023",
-    date: "2023-11-11",
-    type: "success",
-    description: "AICTE Bureau Approval Division counter-signed and registered joint security custody for PG MBA program.",
-    txnId: "#AICTE-DEL-2023-4109",
-    hash: "0x17c0...398fae",
-    actor: "Regional Officer, WRO Mumbai"
-  }
-];
+import {
+  generateInstruments,
+  generateAuditChain,
+  generateSfmsMessages,
+  generateDossierDocs,
+  generateSanctionsList,
+  BANKS
+} from "./dataGenerator.js";
+
+// Generate 1,350 realistic statutory instruments across India
+export const INITIAL_INSTRUMENTS = generateInstruments(1350);
+
+// Generate 1,350 cryptographic chained audit blocks
+export const INITIAL_AUDIT_LOGS = generateAuditChain(INITIAL_INSTRUMENTS, 1350);
+
+// Generate 1000 SFMS Core Banking simulator messages
+export const INITIAL_SFMS_MESSAGES = generateSfmsMessages(INITIAL_INSTRUMENTS, 1000);
+
+// Generate 1000 Legal Dossiers & e-Stamp Affidavits
+export const INITIAL_DOSSIER_DOCS = generateDossierDocs(INITIAL_INSTRUMENTS, 1000);
+
+// Generate Sanctions & Grievance list
+export const INITIAL_SANCTIONS_LIST = generateSanctionsList(INITIAL_INSTRUMENTS);
+
+// Comprehensive list of Scheduled Commercial Bank linkages
 export const INITIAL_BANK_LINKAGES = [
   {
     id: "bank-sbi",
@@ -228,7 +34,8 @@ export const INITIAL_BANK_LINKAGES = [
     lastPing: "Synced 2 mins ago",
     latencyMs: 142,
     logoBg: "#002546",
-    logoText: "SBI"
+    logoText: "SBI",
+    activePledgesCount: INITIAL_INSTRUMENTS.filter(i => i.bankName.includes("State Bank")).length
   },
   {
     id: "bank-pnb",
@@ -240,11 +47,51 @@ export const INITIAL_BANK_LINKAGES = [
     lastPing: "Synced 4 mins ago",
     latencyMs: 188,
     logoBg: "#904d00",
-    logoText: "PNB"
+    logoText: "PNB",
+    activePledgesCount: INITIAL_INSTRUMENTS.filter(i => i.bankName.includes("Punjab")).length
+  },
+  {
+    id: "bank-bob",
+    bankName: "Bank of Baroda",
+    shortCode: "BOB",
+    sfmsCode: "BARB0ANDHER",
+    status: "Active",
+    protocol: "CBS SFMS L799 Engine",
+    lastPing: "Synced 1 min ago",
+    latencyMs: 120,
+    logoBg: "#f97316",
+    logoText: "BOB",
+    activePledgesCount: INITIAL_INSTRUMENTS.filter(i => i.bankName.includes("Baroda")).length
+  },
+  {
+    id: "bank-cnrb",
+    bankName: "Canara Bank",
+    shortCode: "CNRB",
+    sfmsCode: "CNRB0000412",
+    status: "Active",
+    protocol: "Finacle SFMS Link",
+    lastPing: "Synced 3 mins ago",
+    latencyMs: 165,
+    logoBg: "#0284c7",
+    logoText: "CNRB",
+    activePledgesCount: INITIAL_INSTRUMENTS.filter(i => i.bankName.includes("Canara")).length
+  },
+  {
+    id: "bank-ubin",
+    bankName: "Union Bank of India",
+    shortCode: "UBIN",
+    sfmsCode: "UBIN0531201",
+    status: "Active",
+    protocol: "SFMS Gateway v3",
+    lastPing: "Synced 5 mins ago",
+    latencyMs: 175,
+    logoBg: "#dc2626",
+    logoText: "UBIN",
+    activePledgesCount: INITIAL_INSTRUMENTS.filter(i => i.bankName.includes("Union")).length
   },
   {
     id: "bank-pfms",
-    bankName: "Public Financial Mgmt System",
+    bankName: "Public Financial Mgmt System (PFMS)",
     shortCode: "RBI (PFMS)",
     sfmsCode: "Central Sanction Protocol Linked",
     status: "Active",
@@ -252,67 +99,11 @@ export const INITIAL_BANK_LINKAGES = [
     lastPing: "Active Heartbeat",
     latencyMs: 95,
     logoBg: "#0284c7",
-    logoText: "RBI"
+    logoText: "RBI",
+    activePledgesCount: INITIAL_INSTRUMENTS.length
   }
 ];
-export const INITIAL_DOSSIER_DOCS = [
-  {
-    id: "doc-1",
-    title: "Statutory Affidavit-6 (No Encumbrance Affirmation)",
-    documentType: "Legal Affidavit on Non-Judicial e-Stamp",
-    stampValue: "\u20B9100 e-Stamp IN-MH889210947721A",
-    fdrRef: "FDR-SBIN-2018-09",
-    uploadDate: "15 Dec 2018 (Renewal Pending)",
-    signatory: "Dr. Rajesh K. Sharma & Trust Chairman",
-    fileSize: "2.4 MB (Signed PDF/A)",
-    verified: true,
-    status: "Verified & Encrypted"
-  },
-  {
-    id: "doc-2",
-    title: "Original FDR Fixed Deposit Receipt Front & Reverse Scan",
-    documentType: "Bank Deposit Certificate (Security Grade)",
-    fdrRef: "FDR-SBIN-2018-09",
-    uploadDate: "16 Dec 2018",
-    signatory: "Chief Manager, SBI Nariman Point",
-    fileSize: "4.8 MB (High-Res 300DPI)",
-    verified: true,
-    status: "Verified & Encrypted"
-  },
-  {
-    id: "doc-3",
-    title: "SFMS Structured Financial Messaging System Advice (MT760/799)",
-    documentType: "Inter-Bank Structured Financial Message",
-    fdrRef: "FDR-PNB-2020-04",
-    uploadDate: "02 Jul 2020",
-    signatory: "PNB Treasury Gateway Hub",
-    fileSize: "840 KB (Encrypted XML+PDF)",
-    verified: true,
-    status: "Verified & Encrypted"
-  },
-  {
-    id: "doc-4",
-    title: "Joint Lien Undertaking & Tripartite Covenant (AICTE Format-B)",
-    documentType: "Statutory Tripartite Covenant",
-    fdrRef: "FDR-PNB-2020-04",
-    uploadDate: "05 Jul 2020",
-    signatory: "Registrar, Trust Secretary & AICTE WRO",
-    fileSize: "3.1 MB (Signed PDF/A)",
-    verified: true,
-    status: "Verified & Encrypted"
-  },
-  {
-    id: "doc-5",
-    title: "Post Graduate MBA Sanction Lien Certificate",
-    documentType: "Lien Marking Confirmation",
-    fdrRef: "FDR-SBIN-2023-11",
-    uploadDate: "14 Nov 2023",
-    signatory: "Branch Manager, SBI BKC",
-    fileSize: "1.9 MB (Submitted PDF)",
-    verified: false,
-    status: "Under Regional Scrutiny"
-  }
-];
+
 export const TABLE_1_4_RATES = [
   { program: "Engineering & Technology (Degree)", minorityWomen: 28e5, unreserved: 35e5, tenureYears: 8 },
   { program: "Management / MBA (PG)", minorityWomen: 15e5, unreserved: 2e6, tenureYears: 8 },
@@ -323,6 +114,21 @@ export const TABLE_1_4_RATES = [
   { program: "Applied Arts & Crafts / Design", minorityWomen: 15e5, unreserved: 2e6, tenureYears: 8 },
   { program: "Diploma in Engineering (Polytechnic)", minorityWomen: 12e5, unreserved: 15e5, tenureYears: 8 }
 ];
+
 export const FORMAT_INDIAN_CURRENCY = (num) => {
-  return "\u20B9" + num.toLocaleString("en-IN");
+  if (num === null || num === undefined || isNaN(num)) return "₹0";
+  return "₹" + Number(num).toLocaleString("en-IN");
+};
+
+// Compact formatter for large values in Crores / Lakhs
+export const FORMAT_COMPACT_CURRENCY = (num) => {
+  if (num === null || num === undefined || isNaN(num)) return "₹0";
+  const val = Number(num);
+  if (val >= 1e7) {
+    return `₹${(val / 1e7).toFixed(2)} Cr`;
+  }
+  if (val >= 1e5) {
+    return `₹${(val / 1e5).toFixed(2)} L`;
+  }
+  return FORMAT_INDIAN_CURRENCY(val);
 };

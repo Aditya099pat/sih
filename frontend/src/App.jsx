@@ -6,6 +6,7 @@ import {
   INITIAL_DOSSIER_DOCS
 } from "@data/mockData";
 import { Header } from "./components/Header";
+import { Footer } from "./components/Footer";
 import { Sidebar } from "./components/Sidebar";
 import { DashboardView } from "./views/DashboardView";
 import { RegisterDepositView } from "./views/RegisterDepositView";
@@ -199,13 +200,21 @@ export default function App() {
 
   const displayedInstruments = instruments.filter((inst) => {
     if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase().trim();
     return (
-      inst.ref.toLowerCase().includes(q) ||
-      inst.discipline.toLowerCase().includes(q) ||
-      inst.bankName.toLowerCase().includes(q) ||
-      inst.ifsc.toLowerCase().includes(q) ||
-      inst.fdrReceiptNo.toLowerCase().includes(q)
+      (inst.ref && inst.ref.toLowerCase().includes(q)) ||
+      (inst.instituteCode && inst.instituteCode.toLowerCase().includes(q)) ||
+      (inst.instituteName && inst.instituteName.toLowerCase().includes(q)) ||
+      (inst.city && inst.city.toLowerCase().includes(q)) ||
+      (inst.state && inst.state.toLowerCase().includes(q)) ||
+      (inst.bankName && inst.bankName.toLowerCase().includes(q)) ||
+      (inst.branchName && inst.branchName.toLowerCase().includes(q)) ||
+      (inst.ifsc && inst.ifsc.toLowerCase().includes(q)) ||
+      (inst.fdrReceiptNo && inst.fdrReceiptNo.toLowerCase().includes(q)) ||
+      (inst.discipline && inst.discipline.toLowerCase().includes(q)) ||
+      (inst.region && inst.region.toLowerCase().includes(q)) ||
+      (inst.sfmsReference && inst.sfmsReference.toLowerCase().includes(q)) ||
+      (inst.eStampNumber && inst.eStampNumber.toLowerCase().includes(q))
     );
   });
 
@@ -215,6 +224,15 @@ export default function App() {
       <Header
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        instruments={instruments}
+        onViewInstrument={(inst) => {
+          setSelectedInstrument(inst);
+        }}
+        onSelectInstrumentForScrutiny={(inst) => {
+          setScrutinyTargetId(inst.id);
+          setCurrentTab("scrutiny");
+        }}
+        onGoToDashboard={() => setCurrentTab("dashboard")}
         selectedYear={selectedYear}
         onYearChange={setSelectedYear}
         activeRole={activeRole}
@@ -500,6 +518,9 @@ export default function App() {
           );
         }}
       />
+
+      {/* Official Government of India & AICTE Portal Footer */}
+      <Footer onSelectTab={(tab) => setCurrentTab(tab)} />
     </div>
   );
 }

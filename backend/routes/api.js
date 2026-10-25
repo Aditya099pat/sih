@@ -2,26 +2,112 @@ import { Router } from 'express';
 import { 
   initialInstruments, 
   initialSanctionsRegistry, 
+  initialSanctionsList,
   initialEscalationLadder, 
   initialAuditChain, 
   initialSfmsMessages, 
-  initialScholarshipYield, 
-  initialRegionalData,
+  initialDossierDocs,
+  computeScholarshipYield, 
+  computeRegionalData,
   generateSha256 
 } from '../../data/store.js';
+import { answerCopilotQuery } from '../services/copilotEngine.js';
 
 const router = Router();
 
 // In-memory working state
 let instruments = [...initialInstruments];
 let sanctionsRegistry = { ...initialSanctionsRegistry };
+let sanctionsList = [...initialSanctionsList];
 let escalationLadder = [...initialEscalationLadder];
 let auditChain = [...initialAuditChain];
 let sfmsMessages = [...initialSfmsMessages];
+let dossierDocs = [...initialDossierDocs];
 
 // 1. INSTRUMENTS REPOSITORY API
 router.get('/instruments', (req, res) => {
-  res.json({ success: true, count: instruments.length, data: instruments });
+  const { page, limit, search, status, bank, region } = req.query;
+
+  let filtered = [...instruments];
+
+  if (search && search.trim()) {
+    const q = search.toLowerCase().trim();
+    filtered = filtered.filter(i => 
+      i.ref.toLowerCase().includes(q) ||
+      i.instituteName.toLowerCase().includes(q) ||
+      i.instituteCode.toLowerCase().includes(q) ||
+      i.bankName.toLowerCase().includes(q) ||
+      i.ifsc.toLowerCase().includes(q) ||
+      i.discipline.toLowerCase().includes(q) ||
+      i.fdrReceiptNo.toLowerCase().includes(q)
+    );
+  }
+
+  if (status && status !== 'all') {
+    if (status === 'verified') filtered = filtered.filter(i => i.bankConfirmed);
+    else if (status === 'expiring') filtered = filtered.filter(i => i.remainingDays <= 90);
+    else if (status === 'discrepancy') filtered = filtered.filter(i => i.hasDiscrepancy);
+    else if (status === 'pending') filtered = filtered.filter(i => !i.bankConfirmed);
+    else if (status === 'release') filtered = filtered.filter(i => i.remainingDays <= 60);
+  }
+
+  if (bank && bank !== 'all') {
+    filtered = filtered.filter(i => i.bankName.toLowerCase().includes(bank.toLowerCase()));
+  }
+
+  if (region && region !== 'all') {
+    filtered = filtered.filter(i => i.region === region);
+  }
+
+  const total = filtered.length;
+  const totalPrincipal = instruments.reduce((s, i) => s + (i.principalAmount || 0), 0);
+  const totalAccrued = instruments.reduce((s, i) => s + (i.accruedInterest || 0), 0);
+  const maturingCount = instruments.filter(i => i.remainingDays <= 60).length;
+  const discrepancyCount = instruments.filter(i => i.hasDiscrepancy).length;
+  const verifiedCount = instruments.filter(i => i.bankConfirmed).length;
+  const releaseReadyCount = instruments.filter(i => i.remainingDays <= 60 && i.bankConfirmed).length;
+
+  if (page && limit) {
+    const p = Math.max(1, parseInt(page, 10));
+    const l = Math.max(1, parseInt(limit, 10));
+    const startIndex = (p - 1) * l;
+    const paginated = filtered.slice(startIndex, startIndex + l);
+
+    return res.json({
+      success: true,
+      total,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(total / l),
+      count: paginated.length,
+      data: paginated,
+      summaryStats: {
+        totalPrincipal,
+        totalAccrued,
+        maturingCount,
+        discrepancyCount,
+        verifiedCount,
+        releaseReadyCount,
+        totalRegistered: instruments.length
+      }
+    });
+  }
+
+  res.json({ 
+    success: true, 
+    count: filtered.length, 
+    total: filtered.length,
+    data: filtered,
+    summaryStats: {
+      totalPrincipal,
+      totalAccrued,
+      maturingCount,
+      discrepancyCount,
+      verifiedCount,
+      releaseReadyCount,
+      totalRegistered: instruments.length
+    }
+  });
 });
 
 router.post('/instruments', (req, res) => {
@@ -181,7 +267,19 @@ let comprehensiveSanctions = {
 };
 
 router.get('/sanctions', (req, res) => {
-  res.json({ success: true, data: comprehensiveSanctions });
+  const { instituteCode } = req.query;
+  if (instituteCode) {
+    const found = sanctionsList.find(s => s.instituteCode === instituteCode);
+    if (found) {
+      return res.json({ success: true, data: found, institutionsList: sanctionsList });
+    }
+  }
+  res.json({ 
+    success: true, 
+    data: comprehensiveSanctions, 
+    institutionsList: sanctionsList,
+    totalSanctionedCount: sanctionsList.length
+  });
 });
 
 router.post('/sanctions/toggle', (req, res) => {
@@ -330,7 +428,35 @@ router.post('/calculator/forfeiture', (req, res) => {
 
 // 6. CRYPTOGRAPHIC SHA-256 AUDIT LEDGER API (USP 5)
 router.get('/ledger', (req, res) => {
-  res.json({ success: true, count: auditChain.length, data: auditChain });
+  const { page, limit, search } = req.query;
+  let filtered = [...auditChain];
+
+  if (search && search.trim()) {
+    const q = search.toLowerCase().trim();
+    filtered = filtered.filter(b => 
+      b.hash.toLowerCase().includes(q) ||
+      b.title.toLowerCase().includes(q) ||
+      b.actor.toLowerCase().includes(q) ||
+      b.action.toLowerCase().includes(q)
+    );
+  }
+
+  if (page && limit) {
+    const p = Math.max(1, parseInt(page, 10));
+    const l = Math.max(1, parseInt(limit, 10));
+    const startIndex = (p - 1) * l;
+    return res.json({
+      success: true,
+      total: filtered.length,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(filtered.length / l),
+      count: Math.min(l, filtered.length - startIndex),
+      data: filtered.slice(startIndex, startIndex + l)
+    });
+  }
+
+  res.json({ success: true, count: filtered.length, total: filtered.length, data: filtered });
 });
 
 router.post('/ledger/verify', (req, res) => {
@@ -360,7 +486,43 @@ router.post('/ledger/verify', (req, res) => {
 
 // 7. SFMS MT760/MT799 CORE BANKING GATEWAY SIMULATOR API (USP 6)
 router.get('/sfms/messages', (req, res) => {
-  res.json({ success: true, count: sfmsMessages.length, data: sfmsMessages });
+  const { page, limit, search, type, bank } = req.query;
+  let filtered = [...sfmsMessages];
+
+  if (search && search.trim()) {
+    const q = search.toLowerCase().trim();
+    filtered = filtered.filter(m => 
+      m.sfmsReference.toLowerCase().includes(q) ||
+      m.title.toLowerCase().includes(q) ||
+      m.bank.toLowerCase().includes(q) ||
+      m.senderBic.toLowerCase().includes(q)
+    );
+  }
+
+  if (type && type !== 'all') {
+    filtered = filtered.filter(m => m.type === type);
+  }
+
+  if (bank && bank !== 'all') {
+    filtered = filtered.filter(m => m.bank.toLowerCase().includes(bank.toLowerCase()));
+  }
+
+  if (page && limit) {
+    const p = Math.max(1, parseInt(page, 10));
+    const l = Math.max(1, parseInt(limit, 10));
+    const startIndex = (p - 1) * l;
+    return res.json({
+      success: true,
+      total: filtered.length,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(filtered.length / l),
+      count: Math.min(l, filtered.length - startIndex),
+      data: filtered.slice(startIndex, startIndex + l)
+    });
+  }
+
+  res.json({ success: true, count: filtered.length, total: filtered.length, data: filtered });
 });
 
 router.post('/sfms/simulate-mt760', (req, res) => {
@@ -429,61 +591,97 @@ router.post('/sfms/simulate-mt799', (req, res) => {
   res.json({ success: true, message: 'MT799 non-encashment heartbeat verified.', data: msg });
 });
 
+// 7b. STATUTORY DOSSIERS & AFFIDAVITS REPOSITORY API
+router.get('/dossiers', (req, res) => {
+  const { page, limit, search, category, status } = req.query;
+  let filtered = [...dossierDocs];
+
+  if (search && search.trim()) {
+    const q = search.toLowerCase().trim();
+    filtered = filtered.filter(d =>
+      d.title.toLowerCase().includes(q) ||
+      d.ref.toLowerCase().includes(q) ||
+      d.docNo.toLowerCase().includes(q) ||
+      (d.instituteName && d.instituteName.toLowerCase().includes(q)) ||
+      (d.signatory && d.signatory.toLowerCase().includes(q))
+    );
+  }
+
+  if (category && category !== 'all') {
+    filtered = filtered.filter(d => d.category === category);
+  }
+
+  if (status && status !== 'all') {
+    filtered = filtered.filter(d => d.status === status);
+  }
+
+  if (page && limit) {
+    const p = Math.max(1, parseInt(page, 10));
+    const l = Math.max(1, parseInt(limit, 10));
+    const startIndex = (p - 1) * l;
+    return res.json({
+      success: true,
+      total: filtered.length,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(filtered.length / l),
+      count: Math.min(l, filtered.length - startIndex),
+      data: filtered.slice(startIndex, startIndex + l)
+    });
+  }
+
+  res.json({ success: true, count: filtered.length, total: filtered.length, data: filtered });
+});
+
+router.post('/dossiers', (req, res) => {
+  const newDoc = {
+    id: 'doc-' + Date.now(),
+    ref: req.body.ref || `DOC-${Date.now()}`,
+    title: req.body.title || 'Uploaded Statutory Document',
+    category: req.body.category || 'e_stamp',
+    docNo: req.body.docNo || `DOC-NO-${Date.now()}`,
+    fileSize: req.body.fileSize || '1.8 MB',
+    dateUploaded: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    status: req.body.status || 'Verified Valid',
+    signatory: req.body.signatory || 'Authorized Officer, AICTE HQ',
+    verified: true,
+    instituteName: req.body.instituteName || 'Technical Institution',
+    instituteCode: req.body.instituteCode || '1-1029384',
+    state: req.body.state || 'Delhi'
+  };
+
+  dossierDocs.unshift(newDoc);
+  res.status(201).json({ success: true, document: newDoc });
+});
+
 // 8. SCHOLARSHIP YIELD & REINVESTMENT ANALYTICS (Value-Add)
 router.get('/analytics/scholarships', (req, res) => {
-  res.json({ success: true, data: initialScholarshipYield });
+  res.json({ success: true, data: computeScholarshipYield(instruments) });
 });
 router.get('/analytics/yield', (req, res) => {
-  res.json({ success: true, data: initialScholarshipYield });
+  res.json({ success: true, data: computeScholarshipYield(instruments) });
 });
 
 // 9. GEOSPATIAL REGIONAL COMPLIANCE MAP (Value-Add)
 router.get('/analytics/regional', (req, res) => {
-  res.json({ success: true, data: initialRegionalData });
+  res.json({ success: true, data: computeRegionalData(instruments) });
 });
 router.get('/analytics/regional-map', (req, res) => {
-  res.json({ success: true, data: initialRegionalData });
+  res.json({ success: true, data: computeRegionalData(instruments) });
 });
 
 // 10. AI REGULATORY COPILOT / STATUTORY CHATBOT (Value-Add)
 router.post('/copilot/query', (req, res) => {
   const { query } = req.body;
-  const q = (query || '').toLowerCase();
-
-  let answer = "According to AICTE Approval Process Handbook (APH 2025-26 Section 1.4), all technical institutions must maintain statutory security deposits pledged in joint lien with Member Secretary AICTE. Let me know if you would like specifics on Table 1.4 calculation, Affidavit 6 notarization, or Phase-5 refund procedures.";
-  let clause = "APH 2025-26 Clause 1.4(a)";
-
-  if (q.includes('table 1.4') || q.includes('how much') || q.includes('deposit') || q.includes('amount') || q.includes('concession')) {
-    answer = "Under APH Table 1.4, baseline security deposits are: ₹35 Lakhs for UG Engineering (General category) and ₹28 Lakhs (Concessional for Women/PwD/Minority). For North Eastern states and J&K, a 50% statutory discount applies (₹17.5 Lakhs). If the institute campus is on leasehold/rental property, a 2x multiplier applies.";
-    clause = "APH 2025-26 Table 1.4 & Clause 1.4(b)";
-  } else if (q.includes('lock-in') || q.includes('tenure') || q.includes('engineering fdr') || q.includes('period')) {
-    answer = "Under AICTE Approval Process Handbook (APH) Table 1.4, the statutory lock-in period for Engineering & Technology joint FDRs is 8 years. During this period, the principal deposit remains immobilized in unencumbered joint lien with Member Secretary, AICTE New Delhi.";
-    clause = "APH 2025-26 Clause 1.4(c)";
-  } else if (q.includes('affidavit') || q.includes('format 6') || q.includes('notary')) {
-    answer = "Affidavit-6 is mandatory under APH Chapter 1. It must be executed on a non-judicial stamp paper of ₹500/-, duly signed by the Chairman/Secretary of the Trust/Society, and attested by a First Class Judicial Magistrate or Public Notary, declaring irrevocable joint lien in favor of Member Secretary, AICTE.";
-    clause = "APH 2025-26 Format Affidavit-6";
-  } else if (q.includes('release') || q.includes('refund') || q.includes('phase 5')) {
-    answer = "Phase-5 statutory release is admissible only after completion of the 8-year lock-in period. The approval workflow follows a 4-tier chain: 1) Regional Scrutiny Review -> 2) RO Clearance -> 3) Legal Cell Sign-off -> 4) Member Secretary Approval. If any student fee grievance or EVC penalty is active, the release is automatically locked.";
-    clause = "APH 2025-26 Chapter 2.14";
-  } else if (q.includes('t-0') || q.includes('escalation') || q.includes('matured') || q.includes('show-cause')) {
-    answer = "At T-0 Days (deposit matured without renewal), the portal's automated engine flags the institution on the national compliance dashboard and generates an official draft statutory Show-Cause Notice (SCN) giving 15 days to renew or face a 50% intake reduction penalty.";
-    clause = "APH 2025-26 Regulation 2.18";
-  } else if (q.includes('sfms') || q.includes('mt760') || q.includes('mt799')) {
-    answer = "Structured Financial Messaging System (SFMS) interfaces Scheduled Commercial Banks with AICTE. MT760 transmits the initial irrevocable joint lien advice, while MT799 sends periodic electronic balance heartbeats to eliminate counterfeit paper confirmation letters.";
-    clause = "RBI-SFMS INFINET Protocol ISO-15022";
-  } else if (q.includes('penalty') || q.includes('forfeiture') || q.includes('closure')) {
-    answer = "Upon progressive or abrupt institutional closure, Section 1.4.12 empowers AICTE to impose a calibrated 10% to 50% forfeiture deduction on the security deposit to settle unpaid staff gratuities, student fee refunds, and regulatory penalties before disbursing the net residue.";
-    clause = "APH 2025-26 Clause 1.4.12";
-  }
-
-  res.json({
-    success: true,
-    query,
-    answer,
-    reply: answer,
-    statutoryClause: clause,
-    sources: ['AICTE Approval Process Handbook (APH 2025-26) Chapter 1 & Table 1.4', 'Gazette of India Notification #F.No.1-4/APH/2025']
+  const result = answerCopilotQuery({
+    query: query || '',
+    instruments,
+    auditChain,
+    sfmsMessages,
+    dossierDocs,
+    sanctionsList
   });
+  res.json(result);
 });
 
 export default router;

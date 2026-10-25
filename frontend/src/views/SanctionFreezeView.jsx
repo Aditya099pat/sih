@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -15,21 +15,37 @@ import {
   Clock,
   ArrowRight,
   FileCheck,
-  FileText
+  FileText,
+  Search,
+  Filter,
+  X,
+  ChevronDown
 } from "lucide-react";
+import { FORMAT_INDIAN_CURRENCY, FORMAT_COMPACT_CURRENCY } from "@data/mockData";
 
 export const SanctionFreezeView = ({ onNavigateToRpgf }) => {
   const [sanctions, setSanctions] = useState(null);
+  const [institutionsList, setInstitutionsList] = useState([]);
+  const [selectedInstituteCode, setSelectedInstituteCode] = useState("1-1029384");
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState("");
 
-  const fetchSanctions = async () => {
+  // Search & Selector State
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("all");
+
+  const fetchSanctions = async (code) => {
     try {
-      const res = await fetch("/api/sanctions");
+      const url = code ? `/api/sanctions?instituteCode=${code}` : "/api/sanctions";
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setSanctions(data.data);
+        if (data.institutionsList) {
+          setInstitutionsList(data.institutionsList);
+        }
       }
     } catch (err) {
       console.error("Failed to load sanctions:", err);
@@ -42,6 +58,12 @@ export const SanctionFreezeView = ({ onNavigateToRpgf }) => {
     fetchSanctions();
   }, []);
 
+  const handleSelectInstitute = (inst) => {
+    setSelectedInstituteCode(inst.instituteCode);
+    setSanctions(inst);
+    setIsSelectorOpen(false);
+  };
+
   const handleToggleGate = async (gateKey) => {
     setToggling(true);
     try {
@@ -50,13 +72,42 @@ export const SanctionFreezeView = ({ onNavigateToRpgf }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           gate: gateKey,
-          officerName: "Regional Director (WRO Mumbai)"
+          officerName: "Regional Director (Approval Bureau)"
         })
       });
       const data = await res.json();
       if (data.success) {
-        setSanctions(data.data);
-        setFeedbackMsg(`Regulatory policy re-evaluated: Gate '${gateKey}' status updated.`);
+        // Toggle in local state
+        setSanctions((prev) => {
+          const updated = { ...prev };
+          if (gateKey === "evc") {
+            updated.evcFindings = {
+              ...updated.evcFindings,
+              isDelinquent: !updated.evcFindings?.isDelinquent,
+              status: !updated.evcFindings?.isDelinquent ? "Delinquent" : "Compliant ✓"
+            };
+          } else if (gateKey === "ombudsman") {
+            const hasGrievance = (updated.ombudsmanComplaints?.unresolvedCount || 0) > 0;
+            updated.ombudsmanComplaints = {
+              ...updated.ombudsmanComplaints,
+              unresolvedCount: hasGrievance ? 0 : 12,
+              status: hasGrievance ? "Cleared ✓" : "Action Required"
+            };
+          } else if (gateKey === "court") {
+            const hasStay = updated.courtLitigation?.activeStayOrder;
+            updated.courtLitigation = {
+              ...updated.courtLitigation,
+              activeStayOrder: !hasStay,
+              status: !hasStay ? "Injunction Active" : "Vacated / Clean ✓"
+            };
+          }
+          updated.overallReleaseLocked =
+            updated.evcFindings?.isDelinquent ||
+            (updated.ombudsmanComplaints?.unresolvedCount || 0) > 0 ||
+            updated.courtLitigation?.activeStayOrder;
+          return updated;
+        });
+        setFeedbackMsg(`Regulatory policy re-evaluated: Gate '${gateKey}' updated.`);
         setTimeout(() => setFeedbackMsg(""), 4000);
       }
     } catch (err) {
@@ -66,12 +117,27 @@ export const SanctionFreezeView = ({ onNavigateToRpgf }) => {
     }
   };
 
+  const filteredInstitutions = useMemo(() => {
+    return institutionsList.filter((inst) => {
+      if (selectedRegion !== "all" && inst.region !== selectedRegion) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        return (
+          inst.instituteName.toLowerCase().includes(q) ||
+          inst.instituteCode.toLowerCase().includes(q) ||
+          inst.state.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [institutionsList, selectedRegion, searchQuery]);
+
   if (loading || !sanctions) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-3 text-sm text-[#0B2545] font-semibold">
           <RefreshCw className="w-5 h-5 animate-spin text-[#D97706]" />
-          Synchronizing with Central Regulatory Enforcement Registries (EVC, Ombudsman, Courts)...
+          Synchronizing with Central Regulatory Enforcement Registries (EVC, Ombudsman, High Courts)...
         </div>
       </div>
     );
@@ -82,45 +148,45 @@ export const SanctionFreezeView = ({ onNavigateToRpgf }) => {
   // Clause data structured for strict AICTE Act statutory checklist
   const statutoryClauses = [
     {
-      gateKey: "evcFindings",
+      gateKey: "evc",
       clauseNo: "Clause 4.2",
       title: "Expert Visit Committee (EVC) Physical Audit",
       authority: "AICTE Bureau of Approval / EVC Inspection",
       citation: "AICTE Act 1987 Sec. 10(p) & APH 2025 Sec. 2.14",
       evidence: sanctions.evcFindings?.isDelinquent
-        ? "Deficiency in cadre ratio: 8 Prof. vacancies; Zero Intake order issued"
-        : "All physical infrastructure & cadre requirements compliant",
+        ? (sanctions.evcFindings.deficiency || "Deficiency in cadre ratio: Professor vacancies; Zero Intake order in force")
+        : "All physical infrastructure & cadre requirements certified compliant",
       sanctionEffect: "Zero Intake Penalty / Immediate Phase-5 Freeze",
       isViolated: sanctions.evcFindings?.isDelinquent,
-      lastUpdated: sanctions.evcFindings?.lastInspected || "14 Oct 2026",
+      lastUpdated: sanctions.evcFindings?.inspectionDate || "14 Oct 2026",
       icon: <Building className="w-4 h-4 text-rose-700" />
     },
     {
-      gateKey: "ombudsmanComplaints",
+      gateKey: "ombudsman",
       clauseNo: "Clause 7.1",
       title: "Student Fee Ombudsman & Grievance Redressal",
       authority: "National Student Ombudsman Central Registry",
       citation: "AICTE (Redressal of Grievance of Students) Reg. 2019",
-      evidence: sanctions.ombudsmanComplaints?.isDelinquent
-        ? "12 unsettled student fee refund grievances under Section 54"
+      evidence: (sanctions.ombudsmanComplaints?.unresolvedCount || 0) > 0
+        ? `${sanctions.ombudsmanComplaints.unresolvedCount} student grievances pending adjudication regarding withheld capitation fee refunds (${FORMAT_INDIAN_CURRENCY(sanctions.ombudsmanComplaints.totalAmountClaimed || 1450000)})`
         : "Zero unsettled student complaints in national repository",
       sanctionEffect: "Mandatory Student Refund Escrow / Hard Hold",
-      isViolated: sanctions.ombudsmanComplaints?.isDelinquent,
+      isViolated: (sanctions.ombudsmanComplaints?.unresolvedCount || 0) > 0,
       lastUpdated: "18 Oct 2026",
       icon: <GraduationCap className="w-4 h-4 text-amber-700" />
     },
     {
-      gateKey: "courtLitigation",
+      gateKey: "court",
       clauseNo: "Clause 9.4",
       title: "High Court Litigation & Judicial Injunction Registry",
-      authority: "Bombay High Court Appellate Registry",
-      citation: "Writ Petition No. 4410/2023 & Sec. 22 Contempt Rules",
-      evidence: sanctions.courtLitigation?.isDelinquent
-        ? "Judicial interim stay order in force pending disposal"
+      authority: `${sanctions.courtLitigation?.court || "High Court of Bombay"} Registry`,
+      citation: sanctions.courtLitigation?.petitionNo || "Writ Petition (Civil)",
+      evidence: sanctions.courtLitigation?.activeStayOrder
+        ? (sanctions.courtLitigation.details || "Judicial interim stay order in force pending disposal")
         : "Clear judicial title; no active stay orders or contempt notices",
-      sanctionEffect: "Judicial Interlocutory Freeze on Deposit Liquidation",
-      isViolated: sanctions.courtLitigation?.isDelinquent,
-      lastUpdated: sanctions.courtLitigation?.caseNumber || "W.P. 4410/2023",
+      sanctionEffect: "Judicial Liquidation Injunction Active",
+      isViolated: sanctions.courtLitigation?.activeStayOrder,
+      lastUpdated: "Current Term",
       icon: <Scale className="w-4 h-4 text-purple-700" />
     }
   ];
@@ -128,244 +194,260 @@ export const SanctionFreezeView = ({ onNavigateToRpgf }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-md bg-[#0B2545] text-white">
+            <span className="p-1.5 rounded-lg bg-[#0B2545] text-white">
               <ShieldAlert className="w-5 h-5" />
             </span>
-            <div>
-              <h1 className="text-xl font-bold text-[#0B2545]">
-                Regulatory Sanctions Matrix
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold text-[#0F172A]">
+                Regulatory Policy Gate &amp; Sanctions Registry
               </h1>
-              <p className="text-xs text-slate-500">
-                Institutional Health Profile &amp; Automated Cross-Bureau Policy Enforcement (Policy-as-Code)
+              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                isLocked 
+                  ? "bg-rose-100 text-rose-800 border-rose-300 font-mono" 
+                  : "bg-emerald-100 text-emerald-800 border-emerald-300 font-mono"
+              }`}>
+                {isLocked ? "POLICY LOCK: ACTIVE" : "POLICY GATE: CLEARED ✓"}
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-[#64748B] mt-0.5">
+            Policy-as-Code automated release freeze linking EVC physical deficiencies, Student Fee Ombudsman orders, and High Court stays across {institutionsList.length || "120+"} flagged institutions
+          </p>
+        </div>
+
+        {/* Target Switcher */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsSelectorOpen(true)}
+            className="px-3.5 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs font-bold text-[#0B2545] hover:bg-blue-100 flex items-center gap-2 cursor-pointer shadow-2xs"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span className="truncate max-w-[200px]">
+              {sanctions.instituteName?.split(" ")[0]} ({sanctions.instituteCode})
+            </span>
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {feedbackMsg && (
+        <div className="p-3 bg-blue-50 border border-blue-300 rounded-lg text-xs font-bold text-[#0B2545] flex items-center gap-2 animate-in fade-in">
+          <span>✓</span>
+          <span>{feedbackMsg}</span>
+        </div>
+      )}
+
+      {/* Primary Regulatory Freeze Banner */}
+      <div className={`p-5 rounded-xl border transition-all ${
+        isLocked
+          ? "bg-rose-50/80 border-rose-300 text-rose-950 shadow-xs"
+          : "bg-emerald-50/80 border-emerald-300 text-emerald-950 shadow-xs"
+      }`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+              isLocked ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"
+            }`}>
+              {isLocked ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-sm font-bold uppercase tracking-wide">
+                  {isLocked 
+                    ? "Statutory Phase-5 Refund Hard-Freeze in Effect" 
+                    : "Statutory Sanction Gates Passed - Liquid Settlement Permitted"}
+                </h2>
+                <span className="font-mono text-xs bg-white px-2 py-0.5 rounded border font-semibold">
+                  PID: {sanctions.instituteCode} • {sanctions.instituteName}
+                </span>
+              </div>
+              <p className="text-xs text-slate-700 leading-relaxed max-w-3xl">
+                {isLocked
+                  ? "Section 1.4.9 Policy Gate Triggered: Deposit refund is strictly frozen until all outstanding student capitation refund orders, cadre deficiencies, and High Court injunctions are formally vacated."
+                  : "All tripartite inter-bureau clearance criteria satisfied. No student ombudsman judgments, judicial stays, or EVC penalties remain active against this institutional deposit."}
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Global Enforcement Status Banner Pill */}
-        <div className="flex items-center gap-3">
-          <div
-            className={`px-3 py-1.5 rounded-md border flex items-center gap-2 text-xs font-bold ${
-              isLocked
-                ? "bg-rose-50 text-rose-900 border-rose-300"
-                : "bg-emerald-50 text-emerald-900 border-emerald-300"
-            }`}
-          >
+          <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
             {isLocked ? (
-              <>
-                <Lock className="w-4 h-4 text-rose-600 animate-pulse" />
-                <span className="font-mono">PHASE-5 RELEASE: HARD-LOCKED</span>
-              </>
+              <span className="text-xs font-bold text-rose-700 bg-white border border-rose-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                <Ban className="w-4 h-4" />
+                <span>Encashment Prohibited</span>
+              </span>
             ) : (
-              <>
-                <Unlock className="w-4 h-4 text-emerald-600" />
-                <span className="font-mono">ALL STATUTORY GATES PASSED</span>
-              </>
+              <button
+                onClick={onNavigateToRpgf}
+                className="px-3.5 py-1.5 bg-[#059669] hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <span>Proceed to RPGF Release</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* INSTITUTION HEALTH PROFILE SCORECARD */}
-      <div className="card-clean rounded-lg p-5 bg-white border border-[#E2E8F0]">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
-              Institution Compliance Health Profile
-            </span>
-            <h2 className="text-lg font-bold text-[#0F172A]">
-              Bharati Vidya Sansthan (PID: 1-1029384)
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Region: Western Regional Office (WRO), Mumbai • Category: Private Self-Financing Engineering &amp; Management
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <span className="text-[10px] text-slate-500 font-bold uppercase block">Statutory Gate Rule</span>
-              <span className="text-xs font-mono font-bold text-[#0B2545]">
-                Rule 1.4.3 (Automatic Triple-Lock Gate)
-              </span>
-            </div>
-            <div
-              className={`p-3 rounded-md border text-center ${
-                isLocked ? "bg-rose-100/60 border-rose-300" : "bg-emerald-100/60 border-emerald-300"
-              }`}
-            >
-              <span className="text-[10px] font-bold uppercase block text-slate-600">Health Index</span>
-              <span className={`text-base font-bold font-mono ${isLocked ? "text-rose-900" : "text-emerald-900"}`}>
-                {isLocked ? "CRITICAL (SANCTION ACTIVE)" : "100% COMPLIANT"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Unified Tabulated Statutory Checklist */}
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 text-[10px]">
-                <th className="py-2.5 px-3">Statutory Clause &amp; Authority</th>
-                <th className="py-2.5 px-3">Enforcement Evidence &amp; Finding</th>
-                <th className="py-2.5 px-3">Sanction Penalty Mandate</th>
-                <th className="py-2.5 px-3 text-center">Policy Rule Engine</th>
-                <th className="py-2.5 px-3 text-right">Bureau Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 font-sans">
-              {statutoryClauses.map((clause) => (
-                <tr
-                  key={clause.gateKey}
-                  className={`hover:bg-slate-50 transition-colors ${
-                    clause.isViolated ? "bg-rose-50/30" : "bg-white"
-                  }`}
-                >
-                  {/* Clause & Authority */}
-                  <td className="py-3 px-3">
-                    <div className="flex items-center gap-2">
-                      {clause.icon}
-                      <div>
-                        <div className="font-bold text-[#0F172A] flex items-center gap-1.5">
-                          <span className="font-mono text-[#0B2545] font-bold">{clause.clauseNo}</span>
-                          <span>- {clause.title}</span>
-                        </div>
-                        <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                          {clause.citation}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Evidence */}
-                  <td className="py-3 px-3 max-w-[280px]">
-                    <div className="text-slate-800 text-xs leading-relaxed font-medium">
-                      {clause.evidence}
-                    </div>
-                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">
-                      Updated: {clause.lastUpdated}
-                    </div>
-                  </td>
-
-                  {/* Sanction Effect */}
-                  <td className="py-3 px-3">
-                    <span className="font-semibold text-slate-700 text-xs block">
-                      {clause.sanctionEffect}
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-500">
-                      Auto-Locks Phase-5 Disbursement
-                    </span>
-                  </td>
-
-                  {/* Status */}
-                  <td className="py-3 px-3 text-center">
-                    {clause.isViolated ? (
-                      <span className="inline-flex items-center gap-1 bg-rose-100 text-rose-900 border border-rose-300 font-mono font-bold text-[10px] px-2 py-0.5 rounded">
-                        <Ban className="w-3 h-3 text-rose-700" />
-                        FAILED (HARD-LOCKED)
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-900 border border-emerald-300 font-mono font-bold text-[10px] px-2 py-0.5 rounded">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-700" />
-                        PASSED (CLEARED)
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Action Toggle */}
-                  <td className="py-3 px-3 text-right">
-                    <button
-                      onClick={() => handleToggleGate(clause.gateKey)}
-                      disabled={toggling}
-                      className={`px-3 py-1 rounded text-xs font-semibold border transition-colors cursor-pointer ${
-                        clause.isViolated
-                          ? "bg-white text-rose-800 border-rose-300 hover:bg-rose-50"
-                          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-                      }`}
-                    >
-                      {clause.isViolated ? "Simulate Clearance" : "Simulate Infraction"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {feedbackMsg && (
-          <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-[#0B2545] font-semibold flex items-center gap-2">
-            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-            <span>{feedbackMsg}</span>
-          </div>
-        )}
-      </div>
-
-      {/* STRICT VERTICAL TIMELINE OF STATUTORY ENFORCEMENT */}
-      <div className="card-clean rounded-lg p-5 bg-white border border-[#E2E8F0]">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-[#0B2545]" />
-          <span>Statutory Enforcement &amp; Policy-as-Code Audit Trail</span>
+      {/* 3 Interactive Regulatory Compliance Gate Cards */}
+      <div className="space-y-4">
+        <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+          Cross-Bureau Statutory Clearance Gates (Section 1.4.9)
         </h3>
 
-        <div className="space-y-4 border-l-2 border-slate-200 pl-4 ml-2 text-xs">
-          {/* Incident 1 */}
-          <div className="relative">
-            <div className="w-3 h-3 rounded-full bg-rose-600 absolute -left-[23px] top-1 ring-4 ring-rose-100" />
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-[#0F172A]">EVC Physical Audit Report Filed (Zero Intake Sanction)</span>
-              <span className="font-mono text-[10px] text-slate-500">14 Oct 2026, 11:30 IST</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {statutoryClauses.map((clause) => (
+            <div
+              key={clause.gateKey}
+              className={`p-4 rounded-xl border bg-white shadow-2xs space-y-3 flex flex-col justify-between transition-all ${
+                clause.isViolated ? "border-rose-300 ring-1 ring-rose-200" : "border-slate-200"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-1.5">
+                    {clause.icon}
+                    <span className="text-xs font-bold text-slate-900">{clause.clauseNo}</span>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    clause.isViolated ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"
+                  }`}>
+                    {clause.isViolated ? "Non-Compliant" : "Compliant ✓"}
+                  </span>
+                </div>
+
+                <h4 className="font-bold text-xs text-slate-900 mt-2">
+                  {clause.title}
+                </h4>
+                <p className="text-[10px] text-slate-500 font-mono mt-0.5">{clause.authority}</p>
+
+                <div className="mt-3 p-2.5 rounded bg-slate-50 border border-slate-100 text-[11px] text-slate-700 leading-snug">
+                  <strong className="text-slate-900 block text-[10px] uppercase text-slate-400 mb-0.5">
+                    Recorded Finding:
+                  </strong>
+                  {clause.evidence}
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-[10px] text-slate-400 font-mono">{clause.citation}</span>
+                <button
+                  onClick={() => handleToggleGate(clause.gateKey)}
+                  disabled={toggling}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded cursor-pointer transition-colors ${
+                    clause.isViolated
+                      ? "bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100"
+                      : "bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100"
+                  }`}
+                >
+                  {clause.isViolated ? "Mark Cleared ✓" : "Flag Violation ✕"}
+                </button>
+              </div>
             </div>
-            <p className="text-slate-600 mt-0.5 leading-relaxed">
-              Inspection team identified 8 faculty vacancies in Mechanical Engineering. Central approval portal triggered Zero Intake sanction, automatically activating Clause 4.2 deposit lock.
-            </p>
-          </div>
-
-          {/* Incident 2 */}
-          <div className="relative">
-            <div className="w-3 h-3 rounded-full bg-amber-500 absolute -left-[23px] top-1 ring-4 ring-amber-100" />
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-[#0F172A]">Student Ombudsman Grievance Registry Synchronization</span>
-              <span className="font-mono text-[10px] text-slate-500">18 Oct 2026, 15:45 IST</span>
-            </div>
-            <p className="text-slate-600 mt-0.5 leading-relaxed">
-              Central Ombudsman API reported 12 unsettled refund claims totaling ₹14.80L from 2024-25 batch students. Refund gate locked under Clause 7.1.
-            </p>
-          </div>
-
-          {/* Incident 3 */}
-          <div className="relative">
-            <div className="w-3 h-3 rounded-full bg-[#0B2545] absolute -left-[23px] top-1 ring-4 ring-blue-100" />
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-[#0F172A]">Policy-as-Code Gate Lock Enforced</span>
-              <span className="font-mono text-[10px] text-slate-500">Continuous Real-Time Gate</span>
-            </div>
-            <p className="text-slate-600 mt-0.5 leading-relaxed">
-              Phase-5 release API refused disbursement request. Promoter withdrawal blocked until student refund escrow is deposited in SBI joint account.
-            </p>
-          </div>
-        </div>
-
-        {/* Action Callout at Bottom */}
-        <div className="mt-5 pt-3 border-t border-[#E2E8F0] flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#F8FAFC] p-3 rounded-md">
-          <div className="flex items-center gap-2 text-xs text-slate-700">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>
-              Under AICTE Approval Process Handbook, Phase 5 release cannot be authorized while regulatory gates remain unpassed.
-            </span>
-          </div>
-
-          <button
-            onClick={onNavigateToRpgf}
-            className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#0B2545] hover:bg-[#133E87] rounded-md transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
-          >
-            <span>Inspect Phase-5 Release Queue</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          ))}
         </div>
       </div>
+
+      {/* INSTITUTION SELECTOR MODAL */}
+      {isSelectorOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-300 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div>
+                <h3 className="font-bold text-[#0B2545] text-base">Select Flagged Institution for Sanctions Review</h3>
+                <p className="text-xs text-slate-500">
+                  Inspecting {institutionsList.length} institutions with active regulatory flags in repository
+                </p>
+              </div>
+              <button
+                onClick={() => setIsSelectorOpen(false)}
+                className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Filter toolbar */}
+            <div className="p-3 border-b border-slate-200 bg-white space-y-2">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by PID, Institution Name, State..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#0B2545]"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs">
+                {["all", "WRO", "NRO", "SRO", "SWRO", "CRO", "ERO", "NWRO", "SCRO"].map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setSelectedRegion(r)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-semibold cursor-pointer ${
+                      selectedRegion === r ? "bg-[#0B2545] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* List */}
+            <div className="p-3 overflow-y-auto space-y-2 flex-1 divide-y divide-slate-100">
+              {filteredInstitutions.map((inst) => {
+                const isSelected = inst.instituteCode === selectedInstituteCode;
+                return (
+                  <div
+                    key={inst.id}
+                    onClick={() => handleSelectInstitute(inst)}
+                    className={`pt-2 p-2.5 rounded-lg border cursor-pointer transition-all flex items-center justify-between gap-3 ${
+                      isSelected ? "border-[#0B2545] bg-blue-50/60" : "border-slate-200 hover:border-[#0B2545] hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="space-y-0.5 flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-xs text-[#0B2545]">PID: {inst.instituteCode}</span>
+                        <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-bold">
+                          {inst.region} • {inst.state}
+                        </span>
+                        {inst.overallReleaseLocked && (
+                          <span className="text-[9px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.2 rounded">
+                            Hard Lock Active
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-semibold text-xs text-slate-800 truncate">
+                        {inst.instituteName}
+                      </div>
+                    </div>
+
+                    <button className="px-2.5 py-1 text-xs font-bold text-[#0B2545] bg-white border border-[#0B2545] rounded hover:bg-[#0B2545] hover:text-white transition-colors shrink-0">
+                      Inspect
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+              <span>Showing {filteredInstitutions.length} institutions</span>
+              <button
+                onClick={() => setIsSelectorOpen(false)}
+                className="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

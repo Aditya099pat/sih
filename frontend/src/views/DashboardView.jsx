@@ -63,7 +63,7 @@ export const DashboardView = ({
           </h1>
 
           <p className="text-xs text-slate-600 font-medium">
-            Bharati Vidya Sansthan • <span className="font-mono font-semibold">PID: 1-1029384</span> • Western Regional Office (WRO), Mumbai
+            National Technical Education Lien Repository • <span className="font-mono font-semibold">{instruments.length.toLocaleString('en-IN')} Total Registered Instruments</span> • All 8 AICTE Regional Offices (WRO, NRO, SRO, SWRO, CRO, ERO, NWRO, SCRO)
           </p>
         </div>
 

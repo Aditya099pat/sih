@@ -9,7 +9,7 @@ import {
   TrendingUp,
   ShieldCheck
 } from "lucide-react";
-import { FORMAT_INDIAN_CURRENCY } from "@data/mockData";
+import { FORMAT_INDIAN_CURRENCY, FORMAT_COMPACT_CURRENCY } from "@data/mockData";
 
 export const StatCards = ({
   instruments = [],
@@ -17,11 +17,16 @@ export const StatCards = ({
   onSelectFilter
 }) => {
   const totalPrincipal = instruments.reduce((sum, item) => sum + (item.principalAmount || 0), 0);
-  const maturingInstruments = instruments.filter((i) => i.remainingDays <= 90);
+  const totalAccruedYield = instruments.reduce((sum, item) => sum + (item.accruedInterest || 0), 0);
+  
+  const maturingInstruments = instruments.filter((i) => i.remainingDays <= 60);
   const maturingAmount = maturingInstruments.reduce((sum, i) => sum + (i.principalAmount || 0), 0);
+  
   const pendingInstruments = instruments.filter((i) => i.statusType === "info" || !i.bankConfirmed);
   const pendingAmount = pendingInstruments.reduce((sum, i) => sum + (i.principalAmount || 0), 0);
-  const releaseEligibleCount = instruments.filter((i) => i.remainingDays <= 60).length;
+  
+  const releaseEligible = instruments.filter((i) => (i.phaseReleaseEligible || i.remainingDays <= 60) && i.bankConfirmed);
+  const releaseEligibleAmount = releaseEligible.reduce((sum, i) => sum + (i.principalAmount || 0), 0);
 
   const handleKeyDown = (e, filterKey) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -32,7 +37,7 @@ export const StatCards = ({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      {/* Tile 1: Total Active Portfolio (Clickable -> filters to all active FDRs) */}
+      {/* Tile 1: Total Active Portfolio */}
       <div
         role="button"
         tabIndex={0}
@@ -62,19 +67,19 @@ export const StatCards = ({
 
             <div className="mt-1 flex items-baseline justify-between">
               <div className="text-2xl lg:text-[28px] font-bold text-[#0F172A] font-mono tracking-tight tabular-nums">
-                ₹1.05 Cr
+                {FORMAT_COMPACT_CURRENCY(totalPrincipal)}
               </div>
               <span className="text-xs font-semibold text-slate-500 font-mono">
-                {instruments.length} Instruments
+                {instruments.length.toLocaleString("en-IN")} Instruments
               </span>
             </div>
           </div>
 
           <div className="mt-3 pt-2.5 border-t border-[#E2E8F0] flex items-center justify-between text-xs">
-            <span className="text-slate-500 font-mono text-[11px]">
-              +₹18.40L Accrued Yield
+            <span className="text-slate-500 font-mono text-[11px] truncate max-w-[180px]">
+              +{FORMAT_COMPACT_CURRENCY(totalAccruedYield)} Accrued Yield
             </span>
-            <span className="font-semibold text-[#0B2545] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px]">
+            <span className="font-semibold text-[#0B2545] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px] shrink-0">
               <span>View registry</span>
               <ArrowRight className="w-3 h-3" />
             </span>
@@ -82,7 +87,7 @@ export const StatCards = ({
         </div>
       </div>
 
-      {/* Tile 2: Maturing in 60 Days (Clickable -> filters to deadline-sorted instruments) */}
+      {/* Tile 2: Maturing in 60 Days */}
       <div
         role="button"
         tabIndex={0}
@@ -112,19 +117,20 @@ export const StatCards = ({
 
             <div className="mt-1 flex items-baseline justify-between">
               <div className="text-2xl lg:text-[28px] font-bold text-amber-950 font-mono tracking-tight tabular-nums">
-                {maturingInstruments.length} <span className="text-sm font-semibold text-amber-800">Instruments</span>
+                {maturingInstruments.length}{" "}
+                <span className="text-sm font-semibold text-amber-800">Instruments</span>
               </div>
               <span className="text-xs font-bold text-amber-900 font-mono">
-                42d Lead Left
+                Urgent Lead
               </span>
             </div>
           </div>
 
           <div className="mt-3 pt-2.5 border-t border-amber-200 flex items-center justify-between text-xs">
-            <span className="text-amber-900 font-medium font-mono text-[11px]">
-              {FORMAT_INDIAN_CURRENCY(maturingAmount || 3500000)} At Risk
+            <span className="text-amber-900 font-medium font-mono text-[11px] truncate max-w-[180px]">
+              {FORMAT_COMPACT_CURRENCY(maturingAmount)} At Risk
             </span>
-            <span className="font-semibold text-amber-900 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px]">
+            <span className="font-semibold text-amber-900 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px] shrink-0">
               <span>View deadlines</span>
               <ArrowRight className="w-3 h-3" />
             </span>
@@ -132,7 +138,7 @@ export const StatCards = ({
         </div>
       </div>
 
-      {/* Tile 3: Pending Bank Verification (Clickable -> filters to verification queue) */}
+      {/* Tile 3: Pending Bank Verification */}
       <div
         role="button"
         tabIndex={0}
@@ -162,19 +168,20 @@ export const StatCards = ({
 
             <div className="mt-1 flex items-baseline justify-between">
               <div className="text-2xl lg:text-[28px] font-bold text-rose-950 font-mono tracking-tight tabular-nums">
-                {pendingInstruments.length} <span className="text-sm font-semibold text-rose-800">Pending</span>
+                {pendingInstruments.length}{" "}
+                <span className="text-sm font-semibold text-rose-800">Pending</span>
               </div>
               <span className="text-xs font-bold text-rose-900 font-mono">
-                WRO Queue
+                National Queue
               </span>
             </div>
           </div>
 
           <div className="mt-3 pt-2.5 border-t border-rose-200 flex items-center justify-between text-xs">
-            <span className="text-rose-900 font-medium font-mono text-[11px]">
-              {FORMAT_INDIAN_CURRENCY(pendingAmount || 3500000)} Awaiting Match
+            <span className="text-rose-900 font-medium font-mono text-[11px] truncate max-w-[180px]">
+              {FORMAT_COMPACT_CURRENCY(pendingAmount)} Awaiting Match
             </span>
-            <span className="font-semibold text-rose-900 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px]">
+            <span className="font-semibold text-rose-900 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px] shrink-0">
               <span>View queue</span>
               <ArrowRight className="w-3 h-3" />
             </span>
@@ -182,7 +189,7 @@ export const StatCards = ({
         </div>
       </div>
 
-      {/* Tile 4: Phase-5 Release Ready (Clickable -> filters to eligible requests) */}
+      {/* Tile 4: Phase-5 Release Ready */}
       <div
         role="button"
         tabIndex={0}
@@ -211,7 +218,8 @@ export const StatCards = ({
 
             <div className="mt-1 flex items-baseline justify-between">
               <div className="text-2xl lg:text-[28px] font-bold text-[#0F172A] font-mono tracking-tight tabular-nums">
-                1 <span className="text-sm font-medium text-slate-500">Instrument</span>
+                {releaseEligible.length}{" "}
+                <span className="text-sm font-medium text-slate-500">Instruments</span>
               </div>
               <span className="text-xs font-bold text-emerald-700 font-mono">
                 Discharge Ready
@@ -220,10 +228,10 @@ export const StatCards = ({
           </div>
 
           <div className="mt-3 pt-2.5 border-t border-[#E2E8F0] flex items-center justify-between text-xs">
-            <span className="text-slate-600 font-mono text-[11px]">
-              ₹35.00L Refund Eligible
+            <span className="text-slate-600 font-mono text-[11px] truncate max-w-[180px]">
+              {FORMAT_COMPACT_CURRENCY(releaseEligibleAmount)} Refund Eligible
             </span>
-            <span className="font-semibold text-emerald-700 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px]">
+            <span className="font-semibold text-emerald-700 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px] shrink-0">
               <span>View eligible</span>
               <ArrowRight className="w-3 h-3" />
             </span>
